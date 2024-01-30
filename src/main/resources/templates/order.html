@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Blog Posts</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<h1 th:text="${order.id}">All posts</h1>
+<table>
+    <tbody>
+    <tr th:each="item : ${order.cart.items}">
+        <td><form th:action="@{/cart/add}" method="post">
+            <input type="hidden" th:value="${item.id}" name="productId">
+            <input type="hidden" value="1" name="amount">
+            <p><input type="submit" value="add" /></p>
+        </form></td>
+        <td th:text="${item.productId}">id</td>
+        <td th:text="${item.amount}">4</td>
+        <td>100</td>
+        <td></td>
+    </tr>
+    </tbody>
+</table>
+
+<div>
+</div>
+</body>
+</html>

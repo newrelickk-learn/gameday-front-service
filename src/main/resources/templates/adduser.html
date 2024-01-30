@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Blog Posts</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<h1>All posts</h1>
+<div>
+    <form th:action="@{/user/new}" th:object="${user}" method="post">
+        <p>name: <input type="text" name="name" th:field="*{name}" /></p>
+        <p>username: <input type="text" name="username" th:field="*{username}" /></p>
+        <p>email: <input type="text" name="email" th:field="*{email}" /></p>
+        <p>password: <input type="text" name="password" th:field="*{password}" /></p>
+        <p><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
+
+    </form>
+
+</div>
+</body>
+</html>

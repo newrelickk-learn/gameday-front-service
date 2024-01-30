@@ -1,0 +1,26 @@
+FROM node:18-alpine
+WORKDIR /js/front/
+COPY ./src/main/js/react/front/src/ /js/front/src
+COPY ./src/main/js/react/front/public/ /js/front/public
+RUN ls -la /js/front/public
+COPY ./src/main/js/react/front/.env /js/front/
+COPY ./src/main/js/react/front/package.json /js/front/
+COPY ./src/main/js/react/front/package-lock.json /js/front/
+COPY ./src/main/js/react/front/tsconfig.json /js/front/
+RUN npm install
+RUN npx react-scripts build
+
+FROM amazoncorretto:17-alpine
+
+RUN apk update
+RUN apk add --no-cache ca-certificates && update-ca-certificates
+WORKDIR /build
+COPY ./src/ /build/src
+COPY ./gradle/ /build/gradle
+COPY ./gradlew /build/gradlew
+COPY ./build.gradle /build/build.gradle
+COPY ./settings.gradle /build/settings.gradle
+COPY --from=0 /js/front/build/ /jsbuild/
+RUN ls -la /jsbuild/;cp -r /jsbuild/static/* /build/src/main/resources/static/;cp -r /jsbuild/index.html /build/src/main/resources/templates/
+RUN ./gradlew build
+
