@@ -12,12 +12,10 @@ docker-build:
 
   stage: build
   services:
-    - name: registry.hub.docker.com/library/docker:dind
-      command: ["sh"]
-      entrypoint: ["/usr/local/bin/dockerd-entrypoint.sh"]
+    - docker:dind
   before_script:
-    - apk add --update py-pip
-    - pip install awscli
+    - apk add --update py-pip npm
+    - pip install awscli --break-system-packages
     - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/g7c8o4c7
   # Default branch leaves tag empty (= latest tag)
   # All other branches are tagged with the escaped branch name (commit ref slug)
