@@ -20,6 +20,7 @@ COPY ./gradle/ /build/gradle
 COPY ./gradlew /build/gradlew
 COPY ./build.gradle /build/build.gradle
 COPY ./settings.gradle /build/settings.gradle
+COPY ./run.sh /build/run.sh
 COPY --from=0 /js/front/build/ /jsbuild/
 RUN ls -la /jsbuild/;cp -r /jsbuild/static/* /build/src/main/resources/static/;cp -r /jsbuild/index.html /build/src/main/resources/templates/
 RUN ./gradlew build && ./gradlew downloadNewrelic && ./gradlew unzipNewrelic
@@ -31,5 +32,6 @@ RUN apk add --no-cache ca-certificates && update-ca-certificates
 
 COPY --from=1 /build/build/libs/frontservice-0.0.1-SNAPSHOT.jar /app/frontservice.jar
 COPY --from=1 /build/newrelic/ /newrelic
+COPY --from=1 /build/run.sh /run.sh
 
-ENTRYPOINT ["java", "-javaagent:/newrelic/newrelic.jar", "-jar", "/app/frontservice.jar"]
+ENTRYPOINT ["/run.sh"]

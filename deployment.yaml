@@ -57,13 +57,13 @@ spec:
           value: "true"
         - name: NEW_RELIC_TRANSACTION_TRACER_EXPLAIN_THRESHOLD
           value: "0.3"
-        - name: DB_HOST
-          value: front-db
+        - name: JVM_OPTS
+          value: "-Dspring.datasource.url=jdbc:mysql://front-db:3306/db"
         - name: RAILS_LOG_TO_STDOUT
           value: "true"
         - name: RAILS_MAX_THREADS
           value: "2"
-        image: public.ecr.aws/g7c8o4c7/front-service:v0-1-0
+        image: public.ecr.aws/g7c8o4c7/front-service:latest
         imagePullPolicy: Always
         livenessProbe:
           failureThreshold: 3
