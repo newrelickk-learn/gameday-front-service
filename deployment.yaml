@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: Service
+metadata:
+  finalizers:
+  - service.kubernetes.io/load-balancer-cleanup
+  labels:
+    name: front-service
+    manager: kubectl-client-side-apply
+  name: front-service
+  namespace: catalogue
+spec:
+  clusterIP: 172.20.68.6
+  externalTrafficPolicy: Cluster
+  ports:
+  - nodePort: 30063
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    name: front-service
+  sessionAffinity: None
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    name: front-service
+  name: front-service
+  namespace: catalogue
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: front-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        name: front-service
+    spec:
+      containers:
+      - env:
+        - name: NEW_RELIC_APP_NAME
+          value: front-service
+        - name: NEW_RELIC_LICENSE_KEY
+          value: YOUR_NR_LICENSE_KEY
+        - name: NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
+          value: "true"
+        - name: NEW_RELIC_CODE_LEVEL_METRICS_ENABLED
+          value: "true"
+        - name: NEW_RELIC_TRANSACTION_TRACER_EXPLAIN_THRESHOLD
+          value: "0.3"
+        - name: DB_HOST
+          value: front-db
+        - name: RAILS_LOG_TO_STDOUT
+          value: "true"
+        - name: RAILS_MAX_THREADS
+          value: "2"
+        image: public.ecr.aws/g7c8o4c7/front-service:v0-1-0
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /actuator/health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 3
+          successThreshold: 1
+          timeoutSeconds: 300
+        name: front-service
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /actuator/health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 3
+          successThreshold: 1
+          timeoutSeconds: 300
+        resources:
+          limits:
+            cpu: 100m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+        securityContext:
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+            drop:
+            - all
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30

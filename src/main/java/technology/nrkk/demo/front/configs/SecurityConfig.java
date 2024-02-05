@@ -33,11 +33,14 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http)  {
 
         http
-            .authorizeExchange(exchanges -> exchanges
-                .anyExchange().authenticated()
-            )
             .csrf(csrf ->
                 csrf.disable()
+            )
+            .cors(cors ->
+                cors.disable()
+            )
+            .authorizeExchange(exchanges -> exchanges
+                .anyExchange().authenticated()
             )
             .httpBasic(withDefaults())
             .formLogin(withDefaults());

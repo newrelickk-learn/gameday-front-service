@@ -91,6 +91,7 @@ deploy:
     - kubectl apply -f deployment.yaml
   only:
     - merge_requests
+    #- web
 
 deploy-for-schedule:
   stage: deploy
