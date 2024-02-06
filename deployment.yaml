@@ -9,7 +9,7 @@ metadata:
   name: front-service
   namespace: catalogue
 spec:
-  clusterIP: 172.20.68.6
+  clusterIP: 172.20.98.6
   externalTrafficPolicy: Cluster
   ports:
   - nodePort: 30063
@@ -58,7 +58,7 @@ spec:
         - name: NEW_RELIC_TRANSACTION_TRACER_EXPLAIN_THRESHOLD
           value: "0.3"
         - name: JVM_OPTS
-          value: "-Dspring.datasource.url=jdbc:mysql://front-db:3306/db"
+          value: "-Dspring.datasource.url=jdbc:mysql://front-db:3306/db -Dspring.datasource.username=frontservice -Dspring.datasource.password=frontservice_password"
         - name: RAILS_LOG_TO_STDOUT
           value: "true"
         - name: RAILS_MAX_THREADS
@@ -71,10 +71,10 @@ spec:
             path: /actuator/health
             port: 8080
             scheme: HTTP
-          initialDelaySeconds: 60
+          initialDelaySeconds: 180
           periodSeconds: 3
           successThreshold: 1
-          timeoutSeconds: 300
+          timeoutSeconds: 600
         name: front-service
         ports:
         - containerPort: 8080
@@ -85,16 +85,16 @@ spec:
             path: /actuator/health
             port: 8080
             scheme: HTTP
-          initialDelaySeconds: 60
+          initialDelaySeconds: 180
           periodSeconds: 3
           successThreshold: 1
-          timeoutSeconds: 300
+          timeoutSeconds: 600
         resources:
           limits:
-            cpu: 100m
-            memory: 1Gi
+            cpu: 2
+            memory: 2Gi
           requests:
-            cpu: 100m
+            cpu: 500m
             memory: 1Gi
         securityContext:
           capabilities:
