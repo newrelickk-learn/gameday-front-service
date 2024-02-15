@@ -40,7 +40,7 @@ public class SecurityConfig {
                 cors.disable()
             )
             .authorizeExchange(exchanges -> exchanges
-                .pathMatchers("/actuator/**", "/static/**")
+                .pathMatchers("/actuator/**", "/static/**", "/login", "/login/**")
                 .permitAll()
                 .anyExchange().authenticated()
             )
