@@ -1,9 +1,11 @@
 package technology.nrkk.demo.front.webclient;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import technology.nrkk.demo.front.configs.properties.CatalogueProperties;
 import technology.nrkk.demo.front.models.Product;
 import technology.nrkk.demo.front.models.Tags;
 
@@ -12,8 +14,12 @@ public class CatalogueClient {
 
     private final WebClient client;
 
-    public CatalogueClient(WebClient.Builder builder) {
-        this.client = builder.baseUrl("http://localhost:3000").build();
+    private final CatalogueProperties properties;
+
+    @Autowired
+    public CatalogueClient(WebClient.Builder builder, CatalogueProperties properties) {
+        this.properties = properties;
+        this.client = builder.baseUrl(properties.getUrl()).build();
     }
 
     public Mono<Product[]> search(String tags) {

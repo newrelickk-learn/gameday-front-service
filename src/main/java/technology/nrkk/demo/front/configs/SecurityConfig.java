@@ -57,6 +57,7 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
         config.addAllowedOrigin("http://*");
         config.addAllowedOrigin("https://*");
+        config.addAllowedOrigin("https://front.demo.learn.nrkk.technology");
         config.addAllowedHeader("*");
         config.addAllowedMethod("GET");
         config.addAllowedMethod("POST");

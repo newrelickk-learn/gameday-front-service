@@ -1,5 +1,6 @@
 package technology.nrkk.demo.front.configs;
 
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 
 @Configuration
 @EnableWebFlux
+@ConfigurationPropertiesScan
 class WebConfig implements ApplicationContextAware, WebFluxConfigurer {
 
     private ApplicationContext ctx;
