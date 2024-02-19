@@ -46,7 +46,7 @@ docker-build-for-tag:
   services:
     - docker:dind
   before_script:
-    - apk add --update py-pip npm
+    - apk add --update py-pip npm unzip
     - pip install awscli
     - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/g7c8o4c7
     - npm install -g @newrelic/publish-sourcemap
@@ -58,9 +58,13 @@ docker-build-for-tag:
     - docker build . --network host --tag public.ecr.aws/g7c8o4c7/front-service:${tag} --build-arg COMMIT_SHA=${CI_COMMIT_SHA} --build-arg RELEASE_TAG=${CI_COMMIT_TAG}
     - docker push public.ecr.aws/g7c8o4c7/front-service:${tag}
     - docker run --rm -d --name work_${tag} public.ecr.aws/g7c8o4c7/front-service:${tag}
-    - docker cp -a work_${tag}:/home/appuser/webapp/public/packs/js .
+    - mkdir work
+    - cd work
+    - docker cp -a work_${tag}:/app/frontservice.jar .
     - docker rm -f work_${tag}
-    - publish-sourcemap $(ls js/*.js.map) https://front-service.demo.learn.nrkk.technology/packs/$(ls js/*.js) --apiKey=${NEW_RELIC_USER_KEY} --applicationId=1588888201 --repoUrl=https://gitlab.sockshop.nrkk.technology/GamedayBase/front-service --buildCommit=${CI_COMMIT_SHA}
+    - unzip frontservice.jar
+    - cd BOOT-INF/classes/static/js
+    - ls ls *.js | xargs -n 1 -I{} publish-sourcemap {}.map https://front.demo.learn.nrkk.technology/static/js/{} --apiKey=${NEW_RELIC_USER_KEY} --applicationId=1588888201 --repoUrl=https://gitlab.sockshop.nrkk.technology/GamedayBase/front-service --buildCommit=${CI_COMMIT_SHA}
   # Run this job in a branch where a Dockerfile exists
   only:
     - tags
@@ -88,7 +92,8 @@ deploy:
     - mkdir -p ~/.kube; cat ${KUBE_CONFIG} > /root/.kube/config
     - kubectl apply -f deployment.yaml
   only:
-    - merge_requests
+    - tags
+    # - merge_requests
     #- web
 
 deploy-for-schedule:

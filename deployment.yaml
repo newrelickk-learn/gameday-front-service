@@ -58,7 +58,7 @@ spec:
         - name: NEW_RELIC_TRANSACTION_TRACER_EXPLAIN_THRESHOLD
           value: "0.3"
         - name: JVM_OPTS
-          value: "-Dspring.datasource.url=jdbc:mysql://front-db:3306/db -Dspring.datasource.username=frontservice -Dspring.datasource.password=frontservice_password"
+          value: "-Dcatalogue.url=http://catalogue-web -Dspring.datasource.url=jdbc:mysql://front-db:3306/db -Dspring.datasource.username=frontservice -Dspring.datasource.password=frontservice_password"
         - name: RAILS_LOG_TO_STDOUT
           value: "true"
         - name: RAILS_MAX_THREADS
