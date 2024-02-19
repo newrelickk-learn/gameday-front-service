@@ -47,7 +47,7 @@ docker-build-for-tag:
     - docker:dind
   before_script:
     - apk add --update py-pip npm unzip
-    - pip install awscli
+    - pip install awscli --break-system-packages
     - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/g7c8o4c7
     - npm install -g @newrelic/publish-sourcemap
   # Default branch leaves tag empty (= latest tag)
@@ -76,7 +76,7 @@ deploy:
   image: dtzar/helm-kubectl:3.8.2
   before_script:
     - apk add --update py-pip
-    - pip install awscli
+    - pip install awscli --break-system-packages
   script:
     - |
       if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
@@ -101,7 +101,7 @@ deploy-for-schedule:
   image: dtzar/helm-kubectl:3.8.2
   before_script:
     - apk add --update py-pip
-    - pip install awscli
+    - pip install awscli --break-system-packages
   script:
     - |
       tag_raw=$(git describe --tags)
