@@ -12,4 +12,4 @@ const prodOptions = {
     loader_config: {accountID:"4365310",trustKey:"3830171",agentID:"1588920133",licenseKey:"NRJS-c74178fae190d128df7",applicationID:"1588920133"},
 }
 
-export default new BrowserAgent(process.env.NODE_ENV === 'production' ? prodOptions : options)
+export default new BrowserAgent(prodOptions)
