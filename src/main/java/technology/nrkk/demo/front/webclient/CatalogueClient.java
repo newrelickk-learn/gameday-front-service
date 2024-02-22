@@ -1,11 +1,15 @@
 package technology.nrkk.demo.front.webclient;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import technology.nrkk.demo.front.configs.properties.CatalogueProperties;
+import technology.nrkk.demo.front.handlers.GlobalErrorWebExceptionHandler;
 import technology.nrkk.demo.front.models.Product;
 import technology.nrkk.demo.front.models.Tags;
 
@@ -16,6 +20,8 @@ public class CatalogueClient {
 
     private final CatalogueProperties properties;
 
+    protected final static Logger logger = LoggerFactory.getLogger(GlobalErrorWebExceptionHandler.class);
+
     @Autowired
     public CatalogueClient(WebClient.Builder builder, CatalogueProperties properties) {
         this.properties = properties;
@@ -25,18 +31,41 @@ public class CatalogueClient {
     public Mono<Product[]> search(String tags) {
         return this.client.get().uri("/catalogue?tags="+tags).accept(MediaType.APPLICATION_JSON)
             .retrieve()
-            .bodyToMono(Product[].class);
+            .bodyToMono(Product[].class)
+            .onErrorResume(
+                WebClientResponseException.class,
+                ex -> {
+                    return Mono.error(new CatalogueClientException("'/catalogue?tags=" + tags + "' does not work correctly"));
+                });
     }
 
     public Mono<Product> get(String id) {
         return this.client.get().uri("/catalogue/" + id).accept(MediaType.APPLICATION_JSON)
             .retrieve()
-            .bodyToMono(Product.class);
+            .bodyToMono(Product.class)
+            .onErrorResume(
+                WebClientResponseException.class,
+                ex -> {
+                    return Mono.error(new CatalogueClientException("'/catalogue/" + id + "' does not work correctly"));
+                });
     }
 
     public Mono<Tags> getTags() {
         return this.client.get().uri("/tags").accept(MediaType.APPLICATION_JSON)
             .retrieve()
-            .bodyToMono(Tags.class);
+            .bodyToMono(Tags.class)
+            .onErrorResume(
+                WebClientResponseException.class,
+                ex -> {
+                    return Mono.error(new CatalogueClientException("'/tags' does not work correctly"));
+                });
+    }
+
+    public class CatalogueClientException extends Exception {
+        public CatalogueClientException(String message) {
+            super(message);
+        }
+
+
     }
 }
