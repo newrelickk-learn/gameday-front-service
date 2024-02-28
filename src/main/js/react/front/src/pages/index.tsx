@@ -42,7 +42,7 @@ export const Index = () => {
                     <CardContent sx={{flexGrow: 1}}>
                         <FormGroup>
                             {tags.map((tag: string) => (
-                                <FormControlLabel key={`tag-${tag}`} control={<Checkbox onClick={()=> handleClickTag(tag)} checked={selectedTags.find(s=>s === tag) !== undefined} />} label={tag} />
+                                <FormControlLabel key={`tag-${tag}`} control={<Checkbox id={`tag-${tag}`} onClick={()=> handleClickTag(tag)} checked={selectedTags.find(s=>s === tag) !== undefined} />} label={tag} />
                             ))}
                         </FormGroup>
                     </CardContent>
