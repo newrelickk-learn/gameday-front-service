@@ -96,7 +96,7 @@ public class OrderController {
     }
 
     @PostMapping(value = "/order/{id}/ship", produces = "application/json")
-    public Mono<Orders> setPurchaseFromConfirm(Mono<Principal> principal, @PathVariable("id") Integer id) {
+    public Mono<Orders> setShippedFromPurchased(Mono<Principal> principal, @PathVariable("id") Integer id) {
         return principal
             .map(userService::getUserByPrincipal)
             .map(user -> orderService.getOrderById(id))
