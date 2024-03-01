@@ -61,7 +61,7 @@ export const OrderForm: FC<OrderFormProps> = ({ cart, onCloseCart, onNext }) => 
 
             <Box sx={{width: '100%', height: '120px', display: 'flex'}}>
                 {order?.orderStage !== OrderStage.PURCHASED && (<>
-                <TextField helperText="クーポンコード" disabled={order?.orderStage !== OrderStage.NEW} defaultValue={order?.couponCode ?? ''} onChange={(e) => handleChangeCouponCode(e.target.value)}/>
+                <TextField id={"coupon-code"} helperText="クーポンコード" disabled={order?.orderStage !== OrderStage.NEW} defaultValue={order?.couponCode ?? ''} onChange={(e) => handleChangeCouponCode(e.target.value)}/>
                 <TextField
                     select
                     label="お支払い方法"
@@ -86,7 +86,7 @@ export const OrderForm: FC<OrderFormProps> = ({ cart, onCloseCart, onNext }) => 
             <DialogActions>
                 <Button onClick={onCloseCart}>閉じる</Button>
                 {order?.orderStage !== OrderStage.PURCHASED && (
-                <Button onClick={handleNext} autoFocus>
+                <Button id={"next"} onClick={handleNext} autoFocus>
                     {order?.orderStage === OrderStage.NEW && "確認"}
                     {order?.orderStage === OrderStage.CONFIRM && "注文"}
                 </Button>

@@ -56,6 +56,8 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.addAllowedOrigin("http://*");
+        config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedOrigin("http://localhost:3001n@");
         config.addAllowedOrigin("https://*");
         config.addAllowedOrigin("https://front.demo.learn.nrkk.technology");
         config.addAllowedHeader("*");

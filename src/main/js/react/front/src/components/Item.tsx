@@ -42,7 +42,7 @@ export const Item: FC<ItemProps> = ({ item, onAddItem }) => {
                     </CardContent>
                 </CardActionArea>
                 <CardActions>
-                    <Button size="small" color="primary" onClick={()=>handleAddItem(item.id)}>
+                    <Button id={`item-${item.id}`} size="small" color="primary" onClick={()=>handleAddItem(item.id)}>
                         カートに追加する
                     </Button>
                 </CardActions>

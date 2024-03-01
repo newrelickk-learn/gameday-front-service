@@ -64,7 +64,7 @@ export const GlobalHeader: FC<GlobalHeaderProps> = ({ onLoadCart }) => {
                     </Typography>
                 </Box>
                 <Box sx={{padding: '24px'}}>
-                    <Button size="small" color="primary" onClick={handleClickOpenCart}>
+                    <Button id={"go-to-cart"} size="small" color="primary" onClick={handleClickOpenCart}>
                         カート ({cart?.amount ?? 0})
                     </Button>
                 </Box>

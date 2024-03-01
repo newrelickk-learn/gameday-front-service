@@ -94,7 +94,7 @@ export const CartDetail: FC<CartDetailProps> = ({ cart, onCloseCart, onNext }) =
     </DialogContent>
             <DialogActions>
                 <Button onClick={onCloseCart}>戻る</Button>
-                <Button onClick={handleNext} autoFocus>
+                <Button id={"next"} onClick={handleNext} autoFocus>
                     注文に進む
                 </Button>
             </DialogActions>
