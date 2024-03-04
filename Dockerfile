@@ -33,5 +33,7 @@ RUN apk add --no-cache ca-certificates && update-ca-certificates
 COPY --from=1 /build/build/libs/frontservice-0.0.1-SNAPSHOT.jar /app/frontservice.jar
 COPY --from=1 /build/newrelic/ /newrelic
 COPY --from=1 /build/run.sh /run.sh
+ENV NEW_RELIC_METADATA_COMMIT=$COMMIT_SHA
+ENV NEW_RELIC_METADATA_RELEASE_TAG=$RELEASE_TAG
 
 ENTRYPOINT ["/run.sh"]
