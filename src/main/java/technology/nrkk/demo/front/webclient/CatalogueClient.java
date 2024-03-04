@@ -1,5 +1,6 @@
 package technology.nrkk.demo.front.webclient;
 
+import com.newrelic.api.agent.Trace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,9 @@ public class CatalogueClient {
         this.client = builder.baseUrl(properties.getUrl()).build();
     }
 
+    @Trace
     public Mono<Product[]> search(String tags) {
+        logger.info("Try access to /catalogue?tags="+tags);
         return this.client.get().uri("/catalogue?tags="+tags).accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .bodyToMono(Product[].class)
@@ -39,7 +42,9 @@ public class CatalogueClient {
                 });
     }
 
+    @Trace
     public Mono<Product> get(String id) {
+        logger.info("Try access to /catalogue/" + id);
         return this.client.get().uri("/catalogue/" + id).accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .bodyToMono(Product.class)
@@ -50,7 +55,9 @@ public class CatalogueClient {
                 });
     }
 
+    @Trace
     public Mono<Tags> getTags() {
+        logger.info("Try access to /tags/");
         return this.client.get().uri("/tags").accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .bodyToMono(Tags.class)

@@ -6,18 +6,24 @@ import {CartContext} from "../contexts/context";
 import {API} from "../utils/api";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import {Checkbox, FormControlLabel, FormGroup} from "@mui/material";
+import {Alert, Checkbox, FormControlLabel, FormGroup, Snackbar} from "@mui/material";
 
 export const Index = () => {
     const [cart, setCart] = useState<Cart>({id: 0, amount: 0, totalPrice: 0, items: []})
     const [tags, setTags] = useState<Array<string>>([])
     const [selectedTags, setSelectedTags] = useState<Array<string>>([])
+    const [errorMessage, setErrorMessage] = useState("")
+    const handleCloseAlert = useCallback(async () => {
+        setErrorMessage("")
+    }, [setErrorMessage])
 
     useEffect(() => {
         API.get(`/catalogue/tags`).then((data: {tags: string[]}) => {
             setTags(data.tags);
+        }, (error) => {
+            setErrorMessage("エラーが発生しました。しばらくお待ちください。ERR-COMMON-TAG001")
         })
-    }, [setTags])
+    }, [setTags, setErrorMessage])
 
     const handleUpdateCart = useCallback((cart: Cart) => {
         setCart(cart)
@@ -49,7 +55,16 @@ export const Index = () => {
                 </Card>
                 <ItemList onAddItem={handleUpdateCart} tags={selectedTags}/>
             </div>
+            <Snackbar open={errorMessage.length > 0} autoHideDuration={10000} onClose={handleCloseAlert}>
+                <Alert
+                    onClose={handleCloseAlert}
+                    severity="error"
+                    variant="filled"
+                    sx={{width: '100%'}}
+                >
+                    {errorMessage}
+                </Alert>
+            </Snackbar>
         </CartContext.Provider>
-
     )
 }

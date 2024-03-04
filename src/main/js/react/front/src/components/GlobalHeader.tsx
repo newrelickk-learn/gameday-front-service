@@ -3,10 +3,11 @@ import {API} from "../utils/api";
 import {CartContext} from "../contexts/context";
 import {Cart} from "../types/cart";
 import {
+    Alert,
     Dialog,
     DialogActions,
     DialogContent,
-    DialogTitle,
+    DialogTitle, Snackbar,
     Table,
     TableBody, TableCell,
     TableContainer,
@@ -27,19 +28,27 @@ export const GlobalHeader: FC<GlobalHeaderProps> = ({ onLoadCart }) => {
     const [openCart, setOpenCart] = React.useState(false);
     const [stage, setStage] = React.useState<string>("");
     const cart = useContext<Cart>(CartContext)
+    const [errorMessage, setErrorMessage] = useState("")
+    const handleCloseAlert = useCallback(async () => {
+        setErrorMessage("")
+    }, [setErrorMessage])
 
     useEffect(() => {
         API.get(`/cart`).then((data) => {
             onLoadCart(data);
+        }, (error) => {
+            setErrorMessage("エラーが発生しました。しばらくお待ちください。 ERR-CART001")
         })
-    }, [])
+    }, [onLoadCart, setErrorMessage])
 
     const handleClickOpenCart = useCallback(() => {
         API.get(`/cart`).then((data) => {
             onLoadCart(data);
             setOpenCart(true);
+        }, (error) => {
+            setErrorMessage("エラーが発生しました。しばらくお待ちください。ERR-CART002")
         })
-    }, [setOpenCart]);
+    }, [setOpenCart, setErrorMessage]);
 
     const handleCloseCart = useCallback(() => {
         setOpenCart(false);
@@ -82,6 +91,16 @@ export const GlobalHeader: FC<GlobalHeaderProps> = ({ onLoadCart }) => {
                 }
 
             </Dialog>
+            <Snackbar open={errorMessage.length > 0} autoHideDuration={10000} onClose={handleCloseAlert}>
+                <Alert
+                    onClose={handleCloseAlert}
+                    severity="error"
+                    variant="filled"
+                    sx={{width: '100%'}}
+                >
+                    {errorMessage}
+                </Alert>
+            </Snackbar>
         </Fragment>
     );
 }

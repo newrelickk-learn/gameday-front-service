@@ -1,5 +1,8 @@
 package technology.nrkk.demo.front.services;
 
+import com.newrelic.api.agent.NewRelic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,6 +24,7 @@ public class UserService implements ReactiveUserDetailsService {
 
     @Autowired
     UserRepository userRepo;
+    protected final static Logger logger = LoggerFactory.getLogger(UserService.class);
 
     public Mono<UserDetails> createUser(String name, String username, String email, String password) {
         Role role = new Role("ROLE_USER");
@@ -28,7 +32,7 @@ public class UserService implements ReactiveUserDetailsService {
         authorities.add(new SimpleGrantedAuthority(role.getName()));
         Set<Role> roles = new HashSet<>();
         roles.add(role);
-        User user = new User(name, username, email, password, roles);
+        User user = new User(name, username, email, password, roles, "9c7ce9df-7a46-4001-b5ba-7792e27f3615");
         userRepo.save(user);
         return Mono.just(new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),authorities));
     }
@@ -39,7 +43,9 @@ public class UserService implements ReactiveUserDetailsService {
         if(user.isEmpty()){
             new UsernameNotFoundException("User not exists by Username");
         }
-        Set<GrantedAuthority> authorities = user.get().getRoles().stream()
+        logUserInfomation(user);
+        User userData = user.get();
+        Set<GrantedAuthority> authorities = userData.getRoles().stream()
             .map((role) -> new SimpleGrantedAuthority(role.getName()))
             .collect(Collectors.toSet());
         org.springframework.security.core.userdetails.User userDetail = new org.springframework.security.core.userdetails.User(username,user.get().getPassword(),authorities);
@@ -56,6 +62,16 @@ public class UserService implements ReactiveUserDetailsService {
     public User getUserByPrincipal(Principal principal) {
         String username = principal.getName();
         Optional<User> user = userRepo.findByUsernameOrEmail(username, username);
+        logUserInfomation(user);
         return user.get();
+    }
+
+    private void logUserInfomation(Optional<User> user) {
+        User userData = user.get();
+        String userId = String.valueOf(userData.getId());
+        String companyId = userData.getCompanyId();
+        NewRelic.setUserId(userId);
+        NewRelic.addCustomParameter("companyId", companyId);
+        logger.info(String.format("User: %s, CompanyId: %s logged in", userId, companyId));
     }
 }

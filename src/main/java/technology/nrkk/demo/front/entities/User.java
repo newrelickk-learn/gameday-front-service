@@ -19,16 +19,19 @@ public class User {
     private String email;
     @Column(nullable = false)
     private String password;
+    @Column(nullable = false)
+    private String companyId;
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Role> roles;
 
 
-    public User(String name, String username, String email, String password, Set<Role> roles) {
+    public User(String name, String username, String email, String password, Set<Role> roles, String companyId) {
         this.name = name;
         this.username = username;
         this.email = email;
         this.password = password;
         this.roles = roles;
+        this.companyId = companyId;
     }
 
     public User() {

@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class IgnoreTransactionsReactiveFilter implements WebFilter {
 
-    private static final String ACTUATOR_ENDPOINT_PATTERN = "^(/actuator|/favicon).*";
+    private static final String ACTUATOR_ENDPOINT_PATTERN = "^(/actuator|/favicon|/static).*";
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {

@@ -1,4 +1,4 @@
-import {FC, useState, useEffect, useCallback} from 'react';
+import React, {FC, useState, useEffect, useCallback} from 'react';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
@@ -7,6 +7,7 @@ import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import {API} from "../utils/api";
+import {Alert, Snackbar} from "@mui/material";
 
 interface ItemProps {
     item: any,
@@ -14,13 +15,23 @@ interface ItemProps {
 }
 export const Item: FC<ItemProps> = ({ item, onAddItem }) => {
 
-    const handleAddItem = useCallback(async (productId: string)=> {
-        const cart = await API.post('/cart/add', { productId, amount: 1} )
-        onAddItem(cart)
-    }, [])
-    
+    const [errorMessage, setErrorMessage] = useState("")
+    const handleCloseAlert = useCallback(async () => {
+        setErrorMessage("")
+    }, [setErrorMessage])
+
+    const handleAddItem = useCallback(async (productId: string) => {
+        const cart = await API.post('/cart/add', {productId, amount: 1})
+        if (cart === undefined) {
+            setErrorMessage("エラーが発生しました。管理者にお問い合わせください。")
+        } else {
+            onAddItem(cart)
+        }
+    }, [setErrorMessage])
+
     return (
-        <Card sx={{ maxWidth: 345, margin: '16px', flexBasis: '500px', display: 'flex', flexDirection: 'column' }}>
+        <>
+            <Card sx={{maxWidth: 345, margin: '16px', flexBasis: '500px', display: 'flex', flexDirection: 'column'}}>
                 <CardActionArea sx={{flexGrow: 1, display: 'flex', flexDirection: 'column'}}>
                     <CardMedia
                         component="img"
@@ -37,15 +48,26 @@ export const Item: FC<ItemProps> = ({ item, onAddItem }) => {
                             {item.price}円(在庫数 {item.count})
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                        {item.description}
+                            {item.description}
                         </Typography>
                     </CardContent>
                 </CardActionArea>
                 <CardActions>
-                    <Button id={`item-${item.id}`} size="small" color="primary" onClick={()=>handleAddItem(item.id)}>
+                    <Button id={`item-${item.id}`} size="small" color="primary" onClick={() => handleAddItem(item.id)}>
                         カートに追加する
                     </Button>
                 </CardActions>
             </Card>
+            <Snackbar open={errorMessage.length > 0} autoHideDuration={10000} onClose={handleCloseAlert}>
+                <Alert
+                    onClose={handleCloseAlert}
+                    severity="error"
+                    variant="filled"
+                    sx={{width: '100%'}}
+                >
+                    {errorMessage}
+                </Alert>
+            </Snackbar>
+        </>
     );
 }
