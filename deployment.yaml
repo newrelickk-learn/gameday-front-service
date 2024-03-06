@@ -60,7 +60,7 @@ spec:
         - name: NEW_RELIC_ENABLE_AUTO_TRANSACTION_NAMING
           value: "false"
         - name: JVM_OPTS
-          value: "-Dcatalogue.url=http://catalogue-web -Dspring.datasource.url=jdbc:mysql://front-db:3306/db -Dspring.datasource.username=frontservice -Dspring.datasource.password=frontservice_password"
+          value: "-Dcatalogue.url=http://catalogue-web -Dspring.datasource.url=jdbc:mysql://frontdb:3306/db -Dspring.datasource.username=frontservice -Dspring.datasource.password=frontservice_password"
         - name: RAILS_LOG_TO_STDOUT
           value: "true"
         - name: RAILS_MAX_THREADS
