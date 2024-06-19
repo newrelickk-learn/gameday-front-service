@@ -29,6 +29,7 @@ export const ItemList: FC<ItemListProps> = ({ onAddItem, tags }) => {
             setItems(data);
         }, (error) => {
             setErrorMessage("エラーが発生しました。しばらくお待ちください。ERR-TAG001")
+            throw error
         })
     }, [tags, setItems, setErrorMessage])
 
