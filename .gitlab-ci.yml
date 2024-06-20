@@ -64,7 +64,7 @@ docker-build-for-tag:
     - docker rm -f work_${tag}
     - unzip frontservice.jar
     - cd BOOT-INF/classes/static/js
-    - ls *.js | xargs -n 1 -I{} publish-sourcemap {}.map https://front.demo.learn.nrkk.technology/static/js/{} --apiKey=${NEW_RELIC_USER_KEY} --applicationId=1588888201 --repoUrl=https://gitlab.sockshop.nrkk.technology/GamedayBase/front-service --buildCommit=${CI_COMMIT_SHA}
+    - ls *.js | xargs -n 1 -I{} publish-sourcemap {}.map https://front.demo.learn.nrkk.technology/static/js/{} --apiKey=${NEW_RELIC_USER_KEY} --applicationId=1588888201 --repoUrl=https://gitlab.sockshop.nrkk.technology/GamedayBase/front-service --buildCommit=${CI_COMMIT_SHA} --applicationId=${tag}
   # Run this job in a branch where a Dockerfile exists
   only:
     - tags

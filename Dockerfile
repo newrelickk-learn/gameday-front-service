@@ -7,6 +7,7 @@ COPY ./src/main/js/react/front/.env /js/front/
 COPY ./src/main/js/react/front/package.json /js/front/
 COPY ./src/main/js/react/front/package-lock.json /js/front/
 COPY ./src/main/js/react/front/tsconfig.json /js/front/
+RUN sed -i "s/local_dev/$RELEASE_TAG/" /js/front/.env
 RUN npm install
 RUN npx react-scripts build
 
