@@ -36,6 +36,9 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    reports {
+        junitXml.required.set(true)
+    }
 }
 
 task downloadNewrelic(type: Download) {
