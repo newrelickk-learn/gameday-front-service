@@ -1,6 +1,7 @@
-FROM node:18-alpine
 ARG COMMIT_SHA="sha"
 ARG RELEASE_TAG="dev"
+
+FROM node:18-alpine
 WORKDIR /js/front/
 COPY ./src/main/js/react/front/src/ /js/front/src
 COPY ./src/main/js/react/front/public/ /js/front/public
@@ -30,8 +31,6 @@ RUN ls -la /jsbuild/;cp -r /jsbuild/static/* /build/src/main/resources/static/;c
 RUN ./gradlew build && ./gradlew downloadNewrelic && ./gradlew unzipNewrelic
 
 FROM amazoncorretto:17-alpine
-ARG COMMIT_SHA="sha"
-ARG RELEASE_TAG="dev"
 RUN apk update
 RUN apk add --no-cache ca-certificates && update-ca-certificates
 
@@ -40,5 +39,7 @@ COPY --from=1 /build/newrelic/ /newrelic
 COPY --from=1 /build/run.sh /run.sh
 ENV NEW_RELIC_METADATA_COMMIT=$COMMIT_SHA
 ENV NEW_RELIC_METADATA_RELEASE_TAG=$RELEASE_TAG
+
+RUN echo "${NEW_RELIC_METADATA_RELEASE_TAG} ${NEW_RELIC_METADATA_COMMIT}"
 
 ENTRYPOINT ["/run.sh"]
