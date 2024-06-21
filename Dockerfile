@@ -1,4 +1,6 @@
 FROM node:18-alpine
+ARG COMMIT_SHA="sha"
+ARG RELEASE_TAG="dev"
 WORKDIR /js/front/
 COPY ./src/main/js/react/front/src/ /js/front/src
 COPY ./src/main/js/react/front/public/ /js/front/public
@@ -28,7 +30,8 @@ RUN ls -la /jsbuild/;cp -r /jsbuild/static/* /build/src/main/resources/static/;c
 RUN ./gradlew build && ./gradlew downloadNewrelic && ./gradlew unzipNewrelic
 
 FROM amazoncorretto:17-alpine
-
+ARG COMMIT_SHA="sha"
+ARG RELEASE_TAG="dev"
 RUN apk update
 RUN apk add --no-cache ca-certificates && update-ca-certificates
 
