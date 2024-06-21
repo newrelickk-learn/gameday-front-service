@@ -12,7 +12,7 @@ COPY ./src/main/js/react/front/tsconfig.json /js/front/
 ENV REACT_APP_VERSION=$RELEASE_TAG
 RUN echo $REACT_APP_VERSION
 RUN npm install
-RUN echo REACT_APP_VERSION; export REACT_APP_VERSION=$REACT_APP_VERSION; npx react-scripts build
+RUN echo REACT_APP_VERSION; export REACT_APP_VERSION=$REACT_APP_VERSION; REACT_APP_VERSION=$REACT_APP_VERSION　npx react-scripts build
 
 FROM amazoncorretto:17-alpine
 
