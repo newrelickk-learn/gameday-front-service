@@ -8,8 +8,9 @@ COPY ./src/main/js/react/front/package.json /js/front/
 COPY ./src/main/js/react/front/package-lock.json /js/front/
 COPY ./src/main/js/react/front/tsconfig.json /js/front/
 ENV REACT_APP_VERSION=$RELEASE_TAG
+RUN echo $REACT_APP_VERSION
 RUN npm install
-RUN export REACT_APP_VERSION=$RELEASE_TAG; npx react-scripts build
+RUN npx react-scripts build
 
 FROM amazoncorretto:17-alpine
 
