@@ -1,6 +1,8 @@
 package technology.nrkk.demo.front.filters;
 
 import com.newrelic.api.agent.NewRelic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -13,6 +15,7 @@ import reactor.core.publisher.Mono;
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class TransactionNamingReactiveFilter implements WebFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(TransactionNamingReactiveFilter.class);
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 
@@ -20,9 +23,12 @@ public class TransactionNamingReactiveFilter implements WebFilter {
         String method = exchange.getRequest().getMethod().name();
 
 
-        if (path != null && method != null){
+        if (path != null && method != null && !path.startsWith("/static")){
             String transactionName = String.format("%s (%s)", path, method);
             NewRelic.setTransactionName(null, transactionName);
+            logger.info(transactionName);
+        } else {
+            NewRelic.ignoreTransaction();
         }
 
 

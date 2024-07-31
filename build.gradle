@@ -34,6 +34,9 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 }
 
+bootRun {
+    jvmArgs = ["-javaagent:/Users/tazuma/develop/Pelecanidae/frontservice/newrelic/newrelic.jar"]
+}
 tasks.named('test') {
     useJUnitPlatform()
     reports {

@@ -1,5 +1,6 @@
 package technology.nrkk.demo.front.controllers;
 
+import com.newrelic.api.agent.Trace;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,12 +19,14 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @Trace(metricName="/user/new (GET)", dispatcher=true)
     @GetMapping("/user/new")
     public String home(final Model model) {
         model.addAttribute("user", new User());
         return "adduser";
     }
 
+    @Trace(metricName="/user/new (POST)", dispatcher=true)
     @PostMapping("/user/new")
     public Mono<ServerResponse> create(User user) {
         Mono<UserDetails> userDetails = userService.createUser(user.getName(), user.getUsername(), user.getEmail(), user.getPassword());

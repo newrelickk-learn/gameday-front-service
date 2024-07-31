@@ -11,9 +11,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class NewRelicAdvice {
 
+    /*
     @Around("@annotation(org.springframework.web.bind.annotation.GetMapping)")
     public Object start(ProceedingJoinPoint jp) throws Throwable {
-        NewRelic.getAgent().getTransaction().setTransactionName(TransactionNamePriority.CUSTOM_HIGH, true, null, jp.getClass().getName(), jp.getSignature().getName());
+        NewRelic.getAgent().getTransaction().setTransactionName(TransactionNamePriority.CUSTOM_HIGH, true, null, jp., jp.getSignature().getName());
         System.out.println(NewRelic.getAgent().getTransaction().toString());
         try {
             Object result = jp.proceed();
@@ -26,5 +27,5 @@ public class NewRelicAdvice {
             NewRelic.getAgent().getTransaction().getToken().expire();
         }
     }
-
+*/
 }
