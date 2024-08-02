@@ -7,7 +7,7 @@ const options = {
 }
 
 const prodOptions = {
-    init: {session_replay:{enabled:true,block_selector:'',mask_text_selector:'*',sampling_rate:10.0,error_sampling_rate:100.0,mask_all_inputs:true,collect_fonts:true,inline_images:false,inline_stylesheet:true,mask_input_options:{}},distributed_tracing:{enabled:true},privacy:{cookies_enabled:true},ajax:{deny_list:["bam.nr-data.net"]}},
+    init: {session_replay:{enabled:true,block_selector:'',mask_text_selector:'*',sampling_rate:100.0,error_sampling_rate:100.0,mask_all_inputs:true,collect_fonts:true,inline_images:false,inline_stylesheet:true,mask_input_options:{}},distributed_tracing:{enabled:true},privacy:{cookies_enabled:true},ajax:{deny_list:["bam.nr-data.net"]}},
     info: {beacon: 'bam.nr-data.net', errorBeacon: 'bam.nr-data.net', licenseKey: 'NRJS-baf3500e28151acf428', applicationID: '1588977533', sa: 1},
     loader_config: {accountID: '4097184', trustKey: '3830171', agentID: '1588977533', licenseKey: 'NRJS-baf3500e28151acf428', applicationID: '1588977533'},
 }
