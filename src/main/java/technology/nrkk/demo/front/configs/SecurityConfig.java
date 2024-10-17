@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.server.CookieSameSiteSupplier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
@@ -24,32 +25,33 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebFluxSecurity
+@EnableGlobalAuthentication
 public class SecurityConfig {
 
     @Autowired
     private DataSource dataSource;
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http)  {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 
         http
-            .csrf(csrf ->
-                csrf.disable()
-            )
-            .cors(cors ->
-                cors.disable()
-            )
-            .authorizeExchange(exchanges -> exchanges
-                .pathMatchers("/actuator/**", "/static/**", "/login", "/login/**")
-                .permitAll()
-                .anyExchange().authenticated()
-            )
-            .httpBasic(withDefaults())
-            .formLogin(withDefaults());
+                .csrf(csrf ->
+                        csrf.disable()
+                )
+                .cors(cors ->
+                        cors.disable()
+                )
+                .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers("/actuator/**", "/static/**", "/login", "/login/**")
+                        .permitAll()
+                        .anyExchange().authenticated()
+                ).httpBasic(withDefaults())
+                .formLogin(withDefaults());
         ;
 
         return http.build();
     }
+
 
     @Bean
     public CorsConfigurationSource corsConfiguration() {
@@ -81,6 +83,7 @@ public class SecurityConfig {
         CookieWebSessionIdResolver resolver = new CookieWebSessionIdResolver();
         resolver.setCookieName("JSESSIONID");
         resolver.addCookieInitializer((builder) -> builder.path("/"));
+        resolver.addCookieInitializer((builder) -> builder.path("/api/login"));
         resolver.addCookieInitializer((builder) -> builder.sameSite("None"));
         resolver.addCookieInitializer((builder) -> builder.secure(false));
         return resolver;
@@ -105,4 +108,5 @@ public class SecurityConfig {
     public CookieSameSiteSupplier cookieSameSiteSupplier() {
         return CookieSameSiteSupplier.ofNone();
     }
+
 }

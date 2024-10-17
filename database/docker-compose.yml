@@ -1,0 +1,15 @@
+version: '3.9'
+
+services:
+  database:
+    build:
+      context: .
+    platform: linux/amd64
+    image: azumax/frontservice-db:test
+    container_name: mysql-frontservice
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db
+    command: mysqld --innodb_use_native_aio=0

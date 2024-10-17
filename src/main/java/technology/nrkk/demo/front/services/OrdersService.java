@@ -34,6 +34,9 @@ public class OrdersService {
             Orders newOrder = new Orders(cart);
             return ordersRepository.save(newOrder);
         });
+        if (order.getCart() == null) {
+            order.setCart(cart);
+        }
         return order;
     }
 

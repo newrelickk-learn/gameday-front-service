@@ -29,10 +29,17 @@ public class CatalogueController {
     }
 
     @GetMapping(value={"/catalogue/item/{id}/image"}, produces = "application/json")
+    public Mono<Product> getImage(Mono<Principal> principal, @PathVariable("id") String id) {
+        return principal
+                .map(userService::getUserByPrincipal)
+                .flatMap(user -> client.get(id));
+    }
+
+    @GetMapping(value={"/catalogue/item/{id}"}, produces = "application/json")
     public Mono<Product> getProduct(Mono<Principal> principal, @PathVariable("id") String id) {
         return principal
-            .map(userService::getUserByPrincipal)
-            .flatMap(user -> client.get(id));
+                .map(userService::getUserByPrincipal)
+                .flatMap(user -> client.get(id));
     }
 
     @GetMapping(value={"/catalogue/tags"}, produces = "application/json")

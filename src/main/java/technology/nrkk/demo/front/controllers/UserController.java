@@ -13,6 +13,9 @@ import reactor.core.publisher.Mono;
 import technology.nrkk.demo.front.entities.User;
 import technology.nrkk.demo.front.services.UserService;
 
+import java.security.Principal;
+import java.util.concurrent.ExecutionException;
+
 @Controller
 public class UserController {
 
@@ -31,7 +34,13 @@ public class UserController {
     public Mono<ServerResponse> create(User user) {
         Mono<UserDetails> userDetails = userService.createUser(user.getName(), user.getUsername(), user.getEmail(), user.getPassword());
         return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
-            .body(BodyInserters.fromValue(userDetails));
+                .body(BodyInserters.fromValue(userDetails));
     }
 
+    @Trace(metricName="/user (POST)", dispatcher=true)
+    @PostMapping("/user")
+    public Mono<User> get(Mono<Principal> principal) throws ExecutionException, InterruptedException {
+        return principal
+                .map(userService::getUserByPrincipal);
+    }
 }
