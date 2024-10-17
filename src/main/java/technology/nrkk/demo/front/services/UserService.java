@@ -63,6 +63,9 @@ public class UserService implements ReactiveUserDetailsService {
         String username = principal.getName();
         Optional<User> user = userRepo.findByUsernameOrEmail(username, username);
         logUserInfomation(user);
+        if (user.isPresent()) {
+            NewRelic.addCustomParameter("user", user.get().getId());
+        }
         return user.get();
     }
 

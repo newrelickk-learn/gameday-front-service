@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import technology.nrkk.demo.front.configs.properties.CatalogueProperties;
+import technology.nrkk.demo.front.entities.User;
 import technology.nrkk.demo.front.handlers.GlobalErrorWebExceptionHandler;
 import technology.nrkk.demo.front.models.Product;
 import technology.nrkk.demo.front.models.Tags;
@@ -30,9 +31,9 @@ public class CatalogueClient {
     }
 
     @Trace
-    public Mono<Product[]> search(String tags) {
-        logger.info("Try access to /catalogue?tags="+tags);
-        return this.client.get().uri("/catalogue?tags="+tags).accept(MediaType.APPLICATION_JSON)
+    public Mono<Product[]> search(String tags, User user) {
+        logger.info("Try access to /catalogue?tags=%s&user=%s".formatted(tags, user.getId()));
+        return this.client.get().uri("/catalogue?tags=%s&user=%s".formatted(tags, user.getId())).accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .bodyToMono(Product[].class)
             .onErrorResume(

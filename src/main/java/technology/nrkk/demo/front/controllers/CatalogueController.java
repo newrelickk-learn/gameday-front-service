@@ -25,7 +25,7 @@ public class CatalogueController {
     public Mono<Product[]> home(Mono<Principal> principal, @RequestParam String tags) {
         return principal
             .map(userService::getUserByPrincipal)
-            .flatMap(user -> client.search(tags));
+            .flatMap(user -> client.search(tags, user));
     }
 
     @GetMapping(value={"/catalogue/item/{id}/image"}, produces = "application/json")
