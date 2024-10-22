@@ -57,7 +57,7 @@ public class CartService {
     public Mono<CartVO> getCartVo(Cart cart) {
         return Mono.zip(cart.getItems().stream().map(item -> {
             String productId = item.getProductId();
-            return client.get(productId).map(product ->new CartItemVO(item, product));
+            return client.get(productId, cart.getUser()).map(product ->new CartItemVO(item, product));
         }).collect(Collectors.toList()), (list)->{
                     Set<CartItemVO> items = Arrays.stream(list).map(obj->(CartItemVO) obj).collect(Collectors.toSet());
                     CartVO result = new CartVO(cart);

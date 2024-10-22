@@ -54,7 +54,7 @@ public class OrdersService {
         Assert.state(order.getActive(), "Order must be activated");
         Assert.state(order.getOrderStage().equals(Orders.OrderStage.CONFIRM), "Order status must be CONFIRM");
         return Flux.fromIterable(order.getCart().getItems())
-            .flatMap(item -> catalogueService.get(item.getProductId()).map(product -> product.getCount() > item.getAmount()))
+            .flatMap(item -> catalogueService.get(item.getProductId(), order.getUser()).map(product -> product.getCount() > item.getAmount()))
             .all(res -> res)
             .handle((res, sink) -> {
                 if (res) {

@@ -32,8 +32,9 @@ public class CatalogueClient {
 
     @Trace
     public Mono<Product[]> search(String tags, User user) {
-        logger.info("Try access to /catalogue?tags=%s&user=%s".formatted(tags, user.getId()));
-        return this.client.get().uri("/catalogue?tags=%s&user=%s".formatted(tags, user.getId())).accept(MediaType.APPLICATION_JSON)
+        String userId = (user != null) ? user.getId().toString() : "";
+        logger.info("Try access to /catalogue?tags=%s&user=uid_%s".formatted(tags, userId));
+        return this.client.get().uri("/catalogue?tags=%s&user=uid_%s".formatted(tags, userId)).accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .bodyToMono(Product[].class)
             .onErrorResume(
@@ -44,9 +45,10 @@ public class CatalogueClient {
     }
 
     @Trace
-    public Mono<Product> get(String id) {
-        logger.info("Try access to /catalogue/" + id);
-        return this.client.get().uri("/catalogue/" + id).accept(MediaType.APPLICATION_JSON)
+    public Mono<Product> get(String id, User user) {
+        String userId = (user != null) ? user.getId().toString() : "";
+        logger.info("Try access to /catalogue/?user=uid_%s" + id);
+        return this.client.get().uri("/catalogue/%s?user=uid_%s".formatted(id, userId)).accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .bodyToMono(Product.class)
             .onErrorResume(
