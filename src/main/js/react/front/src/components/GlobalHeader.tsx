@@ -36,7 +36,7 @@ export const GlobalHeader: FC<GlobalHeaderProps> = ({ onLoadCart }) => {
 
     useEffect(() => {
         API.post(`/api/user`).then((data) => {
-            if (data.id !== undefined) {
+            if (data !== undefined && data.id !== undefined) {
                 NrAgent.setCustomAttribute('user', `uid_${data.id}`)
             }
             console.log(data)
