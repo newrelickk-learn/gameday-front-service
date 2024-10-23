@@ -20,6 +20,7 @@ import Button from "@mui/material/Button";
 import {CartDetail} from "./CartDetail";
 import {OrderStage} from "../types/order";
 import {OrderForm} from "./OrderForm";
+import NrAgent from "../o11y/newrelic";
 
 interface GlobalHeaderProps {
     onLoadCart: (cart: any)=>void,
@@ -32,6 +33,17 @@ export const GlobalHeader: FC<GlobalHeaderProps> = ({ onLoadCart }) => {
     const handleCloseAlert = useCallback(async () => {
         setErrorMessage("")
     }, [setErrorMessage])
+
+    useEffect(() => {
+        API.post(`/api/user`).then((data) => {
+            if (data.id !== undefined) {
+                NrAgent.setCustomAttribute('user', `uid_${data.id}`)
+            }
+            console.log(data)
+        }, (error) => {
+            setErrorMessage("エラーが発生しました。しばらくお待ちください。 ERR-CART001")
+        })
+    }, [onLoadCart, setErrorMessage])
 
     useEffect(() => {
         API.get(`/cart`).then((data) => {
