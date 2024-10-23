@@ -42,7 +42,7 @@ export const Index = () => {
 
     return (
         <CartContext.Provider value={cart}>
-            <GlobalHeader onLoadCart={(newCart) => handleUpdateCart(newCart)}/>
+            <GlobalHeader onLoadCart={handleUpdateCart}/>
             <div className="main">
                 <Card sx={{ maxWidth: 345, margin: '16px', flexBasis: '500px', display: 'flex', flexDirection: 'column' }}>
                     <CardContent sx={{flexGrow: 1}}>

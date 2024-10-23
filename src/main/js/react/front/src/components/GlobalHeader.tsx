@@ -5,14 +5,7 @@ import {Cart} from "../types/cart";
 import {
     Alert,
     Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle, Snackbar,
-    Table,
-    TableBody, TableCell,
-    TableContainer,
-    TableHead,
-    TableRow
+    Snackbar,
 } from "@mui/material";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -44,7 +37,7 @@ export const GlobalHeader: FC<GlobalHeaderProps> = ({ onLoadCart }) => {
         }, (error) => {
             setErrorMessage("エラーが発生しました。しばらくお待ちください。 ERR-CART001")
         })
-    }, [onLoadCart, setErrorMessage])
+    }, [])
 
     useEffect(() => {
         API.get(`/cart`).then((data) => {

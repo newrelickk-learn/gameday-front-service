@@ -8,6 +8,7 @@ import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import {API} from "../utils/api";
 import {Alert, Snackbar} from "@mui/material";
+import { useNavigate } from "react-router-dom"
 
 interface ItemProps {
     item: any,
@@ -15,6 +16,7 @@ interface ItemProps {
 }
 export const Item: FC<ItemProps> = ({ item, onAddItem }) => {
 
+    const navigate = useNavigate();
     const [errorMessage, setErrorMessage] = useState("")
     const handleCloseAlert = useCallback(async () => {
         setErrorMessage("")
@@ -39,7 +41,7 @@ export const Item: FC<ItemProps> = ({ item, onAddItem }) => {
                         image={`https://demo.sockshop.nrkk.technology${item.imageUrl && item.imageUrl.length > 0 ? item.imageUrl[0] : ''}`}
                         alt="green iguana"
                     />
-                    <CardContent sx={{flexGrow: 1}}>
+                    <CardContent sx={{flexGrow: 1}} onClick={()=>navigate(`/product/${item.id}`)}>
 
                         <Typography gutterBottom variant="h5" component="div">
                             {item.name}
