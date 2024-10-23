@@ -38,6 +38,7 @@ export const GlobalHeader: FC<GlobalHeaderProps> = ({ onLoadCart }) => {
         API.post(`/api/user`).then((data) => {
             if (data !== undefined && data.id !== undefined) {
                 NrAgent.setCustomAttribute('user', `uid_${data.id}`)
+                NrAgent.setUserId(`uid_${data.id}`)
             }
             console.log(data)
         }, (error) => {
