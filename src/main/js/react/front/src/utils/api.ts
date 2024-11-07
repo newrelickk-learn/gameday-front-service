@@ -15,7 +15,7 @@ const get = async (path: string, options?: any): Promise<any> => {
         }
         return response.data
     } catch (error: any) {
-        const err = new Error(`GET ${url} is faled ${JSON.stringify(error.response)}`)
+        const err = new Error(`GET ${url} is faled`)
         throw err
     }
 }
