@@ -28,6 +28,7 @@ export const GlobalHeader: FC<GlobalHeaderProps> = ({ onLoadCart }) => {
     }, [setErrorMessage])
 
     useEffect(() => {
+        NrAgent.log('Load User Information', { level: 'INFO'});
         API.post(`/api/user`).then((data) => {
             if (data !== undefined && data.id !== undefined) {
                 NrAgent.setCustomAttribute('user', `uid_${data.id}`)
@@ -35,14 +36,17 @@ export const GlobalHeader: FC<GlobalHeaderProps> = ({ onLoadCart }) => {
             }
             console.log(data)
         }, (error) => {
+            NrAgent.log('Load User is failed', { level: 'ERROR'});
             setErrorMessage("エラーが発生しました。しばらくお待ちください。 ERR-CART001")
         })
     }, [])
 
     useEffect(() => {
+        NrAgent.log('Load Cart', { level: 'INFO'});
         API.get(`/cart`).then((data) => {
             onLoadCart(data);
         }, (error) => {
+            NrAgent.log('Load Cart is failed', { level: 'ERROR'});
             setErrorMessage("エラーが発生しました。しばらくお待ちください。 ERR-CART001")
         })
     }, [onLoadCart, setErrorMessage])
