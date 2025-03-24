@@ -7,6 +7,7 @@ import {API} from "../utils/api";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import {Alert, Checkbox, FormControlLabel, FormGroup, Snackbar} from "@mui/material";
+import CardMedia from "@mui/material/CardMedia";
 
 export const Index = () => {
     const [cart, setCart] = useState<Cart>({id: 0, amount: 0, totalPrice: 0, items: []})
@@ -43,6 +44,12 @@ export const Index = () => {
     return (
         <CartContext.Provider value={cart}>
             <GlobalHeader onLoadCart={handleUpdateCart}/>
+            <CardMedia
+                component="img"
+                sx={{ width: '100%' }}
+                image={`https://demo.sockshop.nrkk.technology/img/top_banner.png`}
+                alt="green iguana"
+            />
             <div className="main">
                 <Card sx={{ maxWidth: 345, margin: '16px', flexBasis: '500px', display: 'flex', flexDirection: 'column' }}>
                     <CardContent sx={{flexGrow: 1}}>
