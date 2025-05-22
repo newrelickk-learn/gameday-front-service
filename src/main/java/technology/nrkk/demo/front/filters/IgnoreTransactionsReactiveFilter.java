@@ -1,34 +1,28 @@
 package technology.nrkk.demo.front.filters;
 
 import com.newrelic.api.agent.NewRelic;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebFilter;
-import org.springframework.web.server.WebFilterChain;
-import reactor.core.publisher.Mono;
-
-import java.util.regex.Pattern;
+import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class IgnoreTransactionsReactiveFilter implements WebFilter {
+public class IgnoreTransactionsReactiveFilter implements HandlerInterceptor {
 
     private static final String ACTUATOR_ENDPOINT_PATTERN = "^(/actuator|/favicon|/static).*";
-
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        boolean ignoreTx = exchange.getRequest().getPath().value()
-            .matches(ACTUATOR_ENDPOINT_PATTERN);
-
+        boolean ignoreTx = request.getPathInfo()
+                .matches(ACTUATOR_ENDPOINT_PATTERN);
 
         if (ignoreTx){
             NewRelic.ignoreTransaction();
         }
-
-
-        return chain.filter(exchange);
+        return true;
     }
+
 }

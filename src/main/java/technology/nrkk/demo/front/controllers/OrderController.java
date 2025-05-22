@@ -3,9 +3,10 @@ package technology.nrkk.demo.front.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 import technology.nrkk.demo.front.entities.Cart;
 import technology.nrkk.demo.front.entities.Orders;
+import technology.nrkk.demo.front.entities.User;
+import technology.nrkk.demo.front.models.CartVO;
 import technology.nrkk.demo.front.models.OrderVO;
 import technology.nrkk.demo.front.services.CartService;
 import technology.nrkk.demo.front.services.OrdersService;
@@ -13,7 +14,6 @@ import technology.nrkk.demo.front.services.UserService;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class OrderController {
@@ -26,120 +26,91 @@ public class OrderController {
     OrdersService orderService;
 
     @PostMapping(value = "/order")
-    public Mono<OrderVO> get(Mono<Principal> principal, final Model model) {
-        return principal
-                .map(userService::getUserByPrincipal)
-                .map(cartService::getCart)
-                .map(orderService::getOrCreateOrder)
-                .map(order -> cartService.getCartVo(order.getCart())
-                        .map(cartVO -> new OrderVO(order, cartVO)))
-                .flatMap(order -> {
-                    model.addAttribute("order", order);
-                    return order;
-                });
+    public OrderVO get(Principal principal, final Model model) {
+        User user = userService.getUserByPrincipal(principal);
+        Cart cart = cartService.getOrCreateCart(user);
+        Orders order = orderService.getOrCreateOrder(cart);
+        CartVO cartVO = cartService.getCartVo(order.getCart());
+        OrderVO orderVO = new OrderVO(order, cartVO);
+        model.addAttribute("order", orderVO);
+        return orderVO;
     }
 
     @GetMapping(value = "/order")
-    public Mono<OrderVO> startOrder(Mono<Principal> principal, final Model model) {
-        return principal
-                .map(userService::getUserByPrincipal)
-                .map(cartService::getCart)
-                .map(orderService::getOrCreateOrder)
-                .map(order -> cartService.getCartVo(order.getCart())
-                        .map(cartVO -> new OrderVO(order, cartVO)))
-                .flatMap(order -> order)
-                .map(order -> {
-                    model.addAttribute("order", order);
-                    return order;
-                });
+    public OrderVO startOrder(Principal principal, final Model model) {
+        User user = userService.getUserByPrincipal(principal);
+        Cart cart = cartService.getOrCreateCart(user);
+        Orders order = orderService.getOrCreateOrder(cart);
+        CartVO cartVO = cartService.getCartVo(order.getCart());
+        OrderVO orderVO = new OrderVO(order, cartVO);
+        model.addAttribute("order", orderVO);
+        return orderVO;
     }
 
     @PostMapping(value = "/order/confirm", produces = "application/json")
-    public Mono<OrderVO> setConfirmFromNew(Mono<Principal> principal, @RequestBody Orders reqOrder, final Model model) {
-        return principal
-                .map(userService::getUserByPrincipal)
-                .map(cartService::getCart)
-                .map(cart -> orderService.getOrder(cart, Orders.OrderStage.NEW))
-                .map(order -> {
-                    order.setCouponCode(reqOrder.getCouponCode());
-                    order.setPaymentType(reqOrder.getPaymentType());
-                    return order;
-                })
-                .map(orderService::setStatusConfirmFromNew)
-                .map(order -> cartService.getCartVo(order.getCart())
-                        .map(cartVO -> new OrderVO(order, cartVO)))
-                .flatMap(order -> {
-                    model.addAttribute("order", order);
-                    return order;
-                });
+    public OrderVO setConfirmFromNew(Principal principal, @RequestBody Orders reqOrder, final Model model) {
+        User user = userService.getUserByPrincipal(principal);
+        Cart cart = cartService.getCart(user);
+        Orders order = orderService.getOrder(cart, Orders.OrderStage.NEW);
+        order.setCouponCode(reqOrder.getCouponCode());
+        order.setPaymentType(reqOrder.getPaymentType());
+        Orders newOrder = orderService.setStatusConfirmFromNew(order);
+        CartVO cartVO = cartService.getCartVo(newOrder.getCart());
+        OrderVO orderVO = new OrderVO(order, cartVO);
+        model.addAttribute("order", orderVO);
+        return orderVO;
     }
 
     @GetMapping(value = "/order/confirm", produces = "application/json")
-    public Mono<OrderVO> getConfirm(Mono<Principal> principal, final Model model) {
-        return principal
-                .map(userService::getUserByPrincipal)
-                .map(cartService::getCart)
-                .map(cart -> orderService.getOrder(cart, Orders.OrderStage.CONFIRM))
-                .map(order -> cartService.getCartVo(order.getCart())
-                        .map(cartVO -> new OrderVO(order, cartVO)))
-                .flatMap(order -> order)
-                .map(order -> {
-                    model.addAttribute("order", order);
-                    return order;
-                });
+    public OrderVO getConfirm(Principal principal, final Model model) {
+        User user = userService.getUserByPrincipal(principal);
+        Cart cart = cartService.getCart(user);
+        Orders order = orderService.getOrder(cart, Orders.OrderStage.CONFIRM);
+        CartVO cartVO = cartService.getCartVo(order.getCart());
+        OrderVO orderVO = new OrderVO(order, cartVO);
+        model.addAttribute("order", orderVO);
+        return orderVO;
     }
 
     @PostMapping(value = "/order/purchase", produces = "application/json")
-    public Mono<OrderVO> setPurchaseFromConfirm(Mono<Principal> principal, final Model model) {
-        return principal
-                .map(userService::getUserByPrincipal)
-                .map(cartService::getCart)
-                .map(cart -> {
-                    Cart newCart = cartService.inactivate(cart);
-                    return orderService.getOrder(newCart, Orders.OrderStage.CONFIRM);
-                })
-                .map(orderService::setStatusPurchaseFromConfirm)
-                .map(order -> cartService.getCartVo(order.getCart())
-                        .map(cartVO -> new OrderVO(order, cartVO)))
-                .flatMap(order -> order)
-                .map(order -> {
-                    model.addAttribute("order", order);
-                    return order;
-                });
+    public OrderVO setPurchaseFromConfirm(Principal principal, final Model model) {
+        User user = userService.getUserByPrincipal(principal);
+        Cart cart = cartService.getCart(user);
+        Orders order = orderService.getOrder(cart, Orders.OrderStage.CONFIRM);
+        Orders newOrder = orderService.setStatusPurchaseFromConfirm(order);
+        CartVO cartVO = cartService.getCartVo(newOrder.getCart());
+        OrderVO orderVO = new OrderVO(newOrder, cartVO);
+        model.addAttribute("order", orderVO);
+        return orderVO;
     }
 
     @PostMapping(value = "/order/{id}/ship", produces = "application/json")
-    public Mono<OrderVO> setShippedFromPurchased(Mono<Principal> principal, @PathVariable("id") Integer id) {
-        return principal
-                .map(userService::getUserByPrincipal)
-                .map(user -> orderService.getOrderById(id))
-                .flatMap(orderService::assertStock)
-                .map(orderService::setStatusShippedFromPurchased)
-                .map(order -> cartService.getCartVo(order.getCart())
-                        .map(cartVO -> new OrderVO(order, cartVO)))
-                .flatMap(order -> order);
+    public OrderVO setShippedFromPurchased(Principal principal, @PathVariable("id") Integer id) {
+        User user = userService.getUserByPrincipal(principal);
+        Orders order = orderService.assertStock(orderService.getOrderById(id));
+        if (order.getUser().getId().equals(user.getId())) {
+            Orders newOrder = orderService.setStatusShippedFromPurchased(order);
+            CartVO cartVO = cartService.getCartVo(newOrder.getCart());
+            return new OrderVO(newOrder, cartVO);
+        }
+        return null;
     }
 
     @GetMapping(value = "/order/purchase", produces = "application/json")
-    public Mono<OrderVO> getPurchase(Mono<Principal> principal, final Model model) {
-        return principal
-                .map(userService::getUserByPrincipal)
-                .map(cartService::getCart)
-                .map(cart -> orderService.getOrder(cart, Orders.OrderStage.PURCHASED))
-                .map(order -> cartService.getCartVo(order.getCart())
-                        .map(cartVO -> new OrderVO(order, cartVO)))
-                .flatMap(order -> order)
-                .map(order -> {
-                    model.addAttribute("order", order);
-                    return order;
-                });
+    public OrderVO getPurchase(Principal principal, final Model model) {
+        User user = userService.getUserByPrincipal(principal);
+        Cart cart = cartService.getCart(user);
+        Orders order = orderService.getOrder(cart, Orders.OrderStage.PURCHASED);
+        CartVO cartVO = cartService.getCartVo(order.getCart());
+        OrderVO orderVO = new OrderVO(order, cartVO);
+        model.addAttribute("order", orderVO);
+        return orderVO;
     }
 
     @GetMapping(value = "/admin/order/list", produces = "application/json")
-    public Mono<List<OrderVO>> getOrders(Mono<Principal> principal, final Model model) {
-        return principal
-                .map(userService::getUserByPrincipal)
-                .map((user) -> orderService.getAll())
-                .map(orderList -> orderList.stream().map(order -> new OrderVO(order, null)).toList());
+    public List<OrderVO> getOrders(Principal principal, final Model model) {
+        // Just Check User exist.
+        userService.getUserByPrincipal(principal);
+        return orderService.getAll().stream().map(order -> new OrderVO(order, null)).toList();
     }
 }

@@ -5,9 +5,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
 import technology.nrkk.demo.front.entities.Cart;
 import technology.nrkk.demo.front.entities.CartItem;
+import technology.nrkk.demo.front.entities.User;
 import technology.nrkk.demo.front.models.CartVO;
 import technology.nrkk.demo.front.services.CartService;
 import technology.nrkk.demo.front.services.UserService;
@@ -24,27 +24,17 @@ public class CartController {
     CartService cartService;
 
     @PostMapping(value = "/cart/add", produces = "application/json")
-    public Mono<Cart> addItem(Mono<Principal> principal, @RequestBody CartItem cartItem) {
-        return principal
-            .map(userService::getUserByPrincipal)
-            .map(cartService::getOrCreateCart)
-            .handle((cart, sink) -> {
-                try {
-                    sink.next(cartService.addItem(cart, cartItem));
-                } catch (ExecutionException e) {
-                    sink.error(new RuntimeException(e));
-                } catch (InterruptedException e) {
-                    sink.error(new RuntimeException(e));
-                }
-            });
+    public Cart addItem(Principal principal, @RequestBody CartItem cartItem) throws ExecutionException, InterruptedException {
+        User user = userService.getUserByPrincipal(principal);
+        Cart cart = cartService.getOrCreateCart(user);
+        return cartService.addItem(cart, cartItem);
     }
 
     @GetMapping(value = "/cart", produces = "application/json")
-    public Mono<CartVO> get(Mono<Principal> principal) throws ExecutionException, InterruptedException {
-        return principal
-            .map(userService::getUserByPrincipal)
-            .map(cartService::getOrCreateCart)
-            .flatMap(cartService::getCartVo);
+    public CartVO get(Principal principal) throws ExecutionException, InterruptedException {
+        User user = userService.getUserByPrincipal(principal);
+        Cart cart = cartService.getOrCreateCart(user);
+        return cartService.getCartVo(cart);
     }
 
 

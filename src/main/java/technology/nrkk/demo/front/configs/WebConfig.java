@@ -4,27 +4,28 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.web.reactive.config.EnableWebFlux;
-import org.springframework.web.reactive.config.ViewResolverRegistry;
-import org.springframework.web.reactive.config.WebFluxConfigurer;
-import org.springframework.web.reactive.function.server.RouterFunction;
-import org.springframework.web.reactive.function.server.RouterFunctions;
-import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.thymeleaf.spring5.ISpringTemplateEngine;
 import org.thymeleaf.spring5.ISpringWebFluxTemplateEngine;
+import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.spring5.SpringWebFluxTemplateEngine;
 import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
+import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.spring5.view.reactive.ThymeleafReactiveViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import technology.nrkk.demo.front.delegator.NewRelicDelegator;
 
-import static org.springframework.web.reactive.function.server.RouterFunctions.route;
-
 @Configuration
-@EnableWebFlux
+@EnableWebMvc
 @ConfigurationPropertiesScan
-class WebConfig implements ApplicationContextAware, WebFluxConfigurer {
+@ComponentScan(basePackages = "technology.nrkk.demo.front")
+class WebConfig implements ApplicationContextAware, WebMvcConfigurer {
 
     private ApplicationContext ctx;
 
@@ -48,9 +49,11 @@ class WebConfig implements ApplicationContextAware, WebFluxConfigurer {
 
     }
 
-    @Bean
-    public RouterFunction<ServerResponse> staticRouter() {
-        return RouterFunctions.resources("/static/**", new ClassPathResource("static/"));
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // "/resources/**" URIパターンにリクエストがあった場合、classpathの"/static/"にあるリソースとマッピングします
+        registry.addResourceHandler("/static/**")
+                .addResourceLocations("classpath:/static/");
     }
 
     @Bean("newrelic")
@@ -68,22 +71,21 @@ class WebConfig implements ApplicationContextAware, WebFluxConfigurer {
 
  */
     @Bean
-    public ISpringWebFluxTemplateEngine thymeleafTemplateEngine() {
+    public ISpringTemplateEngine thymeleafTemplateEngine() {
         // We override here the SpringTemplateEngine instance that would otherwise be
         // instantiated by
         // Spring Boot because we want to apply the SpringWebFlux-specific context
         // factory, link builder...
-        final SpringWebFluxTemplateEngine templateEngine = new SpringWebFluxTemplateEngine();
+        final SpringTemplateEngine templateEngine = new SpringTemplateEngine();
         templateEngine.setTemplateResolver(thymeleafTemplateResolver());
         return templateEngine;
     }
     @Bean
-    public ThymeleafReactiveViewResolver thymeleafChunkedAndDataDrivenViewResolver() {
-        final ThymeleafReactiveViewResolver viewResolver = new ThymeleafReactiveViewResolver();
+    public ThymeleafViewResolver thymeleafChunkedAndDataDrivenViewResolver() {
+        final ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
         viewResolver.setTemplateEngine(thymeleafTemplateEngine());
 //        viewResolver.setOrder(1);
 //        viewResolver.setViewNames(new String[]{"home"});
-        viewResolver.setResponseMaxChunkSizeBytes(8192); // OUTPUT BUFFER size limit
         return viewResolver;
     }
 

@@ -3,10 +3,9 @@ package technology.nrkk.demo.front.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import technology.nrkk.demo.front.entities.Cart;
 import technology.nrkk.demo.front.entities.Orders;
+import technology.nrkk.demo.front.models.Product;
 import technology.nrkk.demo.front.repositories.CartRepository;
 import technology.nrkk.demo.front.repositories.OrdersRepository;
 import technology.nrkk.demo.front.webclient.CatalogueClient;
@@ -48,20 +47,24 @@ public class OrdersService {
         return newOrder;
     }
 
-    public Mono<Orders> assertStock(Optional<Orders> optOrder) {
+    public Orders assertStock(Optional<Orders> optOrder) {
         Assert.state(optOrder.isPresent(), String.format("Order must present"));
         Orders order = optOrder.get();
         Assert.state(order.getActive(), "Order must be activated");
         Assert.state(order.getOrderStage().equals(Orders.OrderStage.CONFIRM), "Order status must be CONFIRM");
-        return Flux.fromIterable(order.getCart().getItems())
-            .flatMap(item -> catalogueService.get(item.getProductId(), order.getUser()).map(product -> product.getCount() > item.getAmount()))
-            .all(res -> res)
-            .handle((res, sink) -> {
-                if (res) {
-                    sink.next(order);
-                } else {
-                    sink.error(new RuntimeException("There are no stock"));
-            }});
+        boolean stockValid = order.getCart().getItems()
+                .stream().map(item -> {
+                    try {
+                        Product product = catalogueService.get(item.getProductId(), order.getUser());
+                        return product.getCount() > item.getAmount();
+                    } catch (CatalogueClient.CatalogueClientException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).reduce(true, (result, val) -> result && val);
+        if (!stockValid) {
+            throw new RuntimeException("There are no stock");
+        }
+        return order;
     }
 
     public Orders setStatusPurchaseFromConfirm(Orders order) {

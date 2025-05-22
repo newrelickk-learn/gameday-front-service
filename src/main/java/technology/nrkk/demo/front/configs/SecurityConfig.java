@@ -4,13 +4,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.server.CookieSameSiteSupplier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
@@ -24,34 +33,31 @@ import javax.sql.DataSource;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
-@EnableWebFluxSecurity
+@EnableWebSecurity
 @EnableGlobalAuthentication
 public class SecurityConfig {
 
     @Autowired
     private DataSource dataSource;
 
-    @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    @Autowired
+    private UserDetailsService userDetailsService;
 
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf ->
-                        csrf.disable()
-                )
-                .cors(cors ->
-                        cors.disable()
-                )
-                .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/actuator/**", "/static/**", "/login", "/login/**")
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests((requests) -> requests
+                        .requestMatchers("/actuator/**", "/static/**", "/login", "/login/**")
                         .permitAll()
-                        .anyExchange().authenticated()
-                ).httpBasic(withDefaults())
+                        .anyRequest().authenticated()
+                )
+                .httpBasic(withDefaults())
                 .formLogin(withDefaults());
-        ;
 
         return http.build();
     }
-
 
     @Bean
     public CorsConfigurationSource corsConfiguration() {
@@ -72,16 +78,16 @@ public class SecurityConfig {
         return source;
     }
 
+/*
     @Bean
     public CorsWebFilter corsFilter() {
         return new CorsWebFilter(corsConfiguration());
     }
-
-
+*/
     @Bean
     public WebSessionIdResolver webSessionIdResolver() {
         CookieWebSessionIdResolver resolver = new CookieWebSessionIdResolver();
-        resolver.setCookieName("JSESSIONID");
+        resolver.setCookieName("SESSION");
         resolver.addCookieInitializer((builder) -> builder.path("/"));
         resolver.addCookieInitializer((builder) -> builder.path("/api/login"));
         resolver.addCookieInitializer((builder) -> builder.sameSite("None"));
@@ -91,13 +97,13 @@ public class SecurityConfig {
 
 
     @Bean
-    public UserDetailsManager userDetailsManager() {
-        JdbcUserDetailsManager user = new JdbcUserDetailsManager(this.dataSource);
-        // ユーザーを追加したい時
-        // user.createUser(makeUser("user", "pass", "USER"));
-
-        return user;
+    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
+
 
     @Bean
     public static PasswordEncoder passwordEncoder() {

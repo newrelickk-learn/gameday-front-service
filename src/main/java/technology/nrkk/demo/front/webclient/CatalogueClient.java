@@ -4,71 +4,68 @@ import com.newrelic.api.agent.Trace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 import technology.nrkk.demo.front.configs.properties.CatalogueProperties;
 import technology.nrkk.demo.front.entities.User;
-import technology.nrkk.demo.front.handlers.GlobalErrorWebExceptionHandler;
 import technology.nrkk.demo.front.models.Product;
 import technology.nrkk.demo.front.models.Tags;
 
 @Component
 public class CatalogueClient {
 
-    private final WebClient client;
-
+    private final RestTemplate restTemplate;
     private final CatalogueProperties properties;
 
-    protected final static Logger logger = LoggerFactory.getLogger(GlobalErrorWebExceptionHandler.class);
+    protected final static Logger logger = LoggerFactory.getLogger(CatalogueClient.class);
 
     @Autowired
-    public CatalogueClient(WebClient.Builder builder, CatalogueProperties properties) {
+    public CatalogueClient(RestTemplateBuilder builder, CatalogueProperties properties) {
         this.properties = properties;
-        this.client = builder.baseUrl(properties.getUrl()).build();
+        this.restTemplate = builder
+                .additionalInterceptors((request, body, execution) -> {
+                    request.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+                    return execution.execute(request, body);
+                })
+                .build();
     }
 
     @Trace
-    public Mono<Product[]> search(String tags, User user) {
+    public Product[] search(String tags, User user) throws CatalogueClientException {
         String userId = (user != null) ? user.getId().toString() : "";
-        logger.info("Try access to /catalogue?tags=%s&user=uid_%s".formatted(tags, userId));
-        return this.client.get().uri("/catalogue?tags=%s&user=uid_%s".formatted(tags, userId)).accept(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .bodyToMono(Product[].class)
-            .onErrorResume(
-                WebClientResponseException.class,
-                ex -> {
-                    return Mono.error(new CatalogueClientException("'/catalogue?tags=" + tags + "' does not work correctly"));
-                });
+        try {
+            ResponseEntity<Product[]> response = this.restTemplate.getForEntity("%s/catalogue?tags=%s&user=uid_%s".formatted(this.properties.getUrl(), tags, userId), Product[].class);
+            return response.getBody();
+        } catch (RestClientException e) {
+            throw new CatalogueClientException("'/catalogue?tags=" + tags + "' does not work correctly");
+        }
     }
 
     @Trace
-    public Mono<Product> get(String id, User user) {
+    public Product get(String id, User user) throws CatalogueClientException {
         String userId = (user != null) ? user.getId().toString() : "";
         logger.info("Try access to /catalogue/?user=uid_%s" + id);
-        return this.client.get().uri("/catalogue/%s?user=uid_%s".formatted(id, userId)).accept(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .bodyToMono(Product.class)
-            .onErrorResume(
-                WebClientResponseException.class,
-                ex -> {
-                    return Mono.error(new CatalogueClientException("'/catalogue/" + id + "' does not work correctly"));
-                });
+        try {
+            ResponseEntity<Product> response = this.restTemplate.getForEntity("%s/catalogue/%s?user=uid_%s".formatted(this.properties.getUrl(), id, userId), Product.class);
+            return response.getBody();
+        } catch (RestClientException e) {
+            throw new CatalogueClientException("'/catalogue/" + id + "' does not work correctly");
+        }
     }
 
     @Trace
-    public Mono<Tags> getTags() {
+    public Tags getTags() throws CatalogueClientException {
         logger.info("Try access to /tags/");
-        return this.client.get().uri("/tags").accept(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .bodyToMono(Tags.class)
-            .onErrorResume(
-                WebClientResponseException.class,
-                ex -> {
-                    return Mono.error(new CatalogueClientException("'/tags' does not work correctly"));
-                });
+        try {
+            ResponseEntity<Tags> response = this.restTemplate.getForEntity("%s/tags".formatted(this.properties.getUrl()), Tags.class);
+            return response.getBody();
+        } catch (RestClientException e) {
+            throw new CatalogueClientException("'/tags' does not work correctly");
+        }
     }
 
     public class CatalogueClientException extends Exception {
