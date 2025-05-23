@@ -41,7 +41,8 @@ public class UserService implements UserDetailsService {
         roles.add(role);
         User user = new User(name, username, email, password, roles, "9c7ce9df-7a46-4001-b5ba-7792e27f3615");
         userRepo.save(user);
-        rankService.getRank(user);
+        String rank = rankService.getRank(user);
+        logger.info("User rank: " + rank);
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),authorities);
     }
 
@@ -51,7 +52,8 @@ public class UserService implements UserDetailsService {
         logUserInfomation(user);
         if (user.isPresent()) {
             NewRelic.addCustomParameter("user", user.get().getId());
-            rankService.getRank(user.get());
+            String rank = rankService.getRank(user.get());
+            logger.info("User rank: " + rank);
         }
         return user.get();
     }
@@ -73,7 +75,8 @@ public class UserService implements UserDetailsService {
         }
         logUserInfomation(user);
         User userData = user.get();
-        rankService.getRank(userData);
+        String rank = rankService.getRank(user.get());
+        logger.info("User rank: " + rank);
         Set<GrantedAuthority> authorities = userData.getRoles().stream()
                 .map((role) -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toSet());
