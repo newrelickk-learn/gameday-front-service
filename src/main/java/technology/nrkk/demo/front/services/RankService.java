@@ -5,13 +5,13 @@ import org.springframework.stereotype.Service;
 import technology.nrkk.demo.front.entities.User;
 
 @Service
-public class RoleService {
-    public String getRole(User user) {
+public class RankService {
+    public String getRank(User user) {
         if (user.getId()%5  == 0) {
-            NewRelic.addCustomParameter("Role", "GoldMember");
+            NewRelic.addCustomParameter("memberRank", "GoldMember");
             return "GoldMember";
         }
-        NewRelic.addCustomParameter("Role", "NormalMember");
+        NewRelic.addCustomParameter("memberRank", "NormalMember");
         return "Normal Member";
     }
 }

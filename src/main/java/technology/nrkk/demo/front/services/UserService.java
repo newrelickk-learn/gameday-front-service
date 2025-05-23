@@ -8,10 +8,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -31,7 +29,7 @@ public class UserService implements UserDetailsService {
     UserRepository userRepo;
 
     @Autowired
-    RoleService roleService;
+    RankService rankService;
 
     protected final static Logger logger = LoggerFactory.getLogger(UserService.class);
 
@@ -43,7 +41,7 @@ public class UserService implements UserDetailsService {
         roles.add(role);
         User user = new User(name, username, email, password, roles, "9c7ce9df-7a46-4001-b5ba-7792e27f3615");
         userRepo.save(user);
-        roleService.getRole(user);
+        rankService.getRank(user);
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),authorities);
     }
 
@@ -53,7 +51,7 @@ public class UserService implements UserDetailsService {
         logUserInfomation(user);
         if (user.isPresent()) {
             NewRelic.addCustomParameter("user", user.get().getId());
-            roleService.getRole(user.get());
+            rankService.getRank(user.get());
         }
         return user.get();
     }
@@ -75,7 +73,7 @@ public class UserService implements UserDetailsService {
         }
         logUserInfomation(user);
         User userData = user.get();
-        roleService.getRole(userData);
+        rankService.getRank(userData);
         Set<GrantedAuthority> authorities = userData.getRoles().stream()
                 .map((role) -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toSet());
