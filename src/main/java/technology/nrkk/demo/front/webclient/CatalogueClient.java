@@ -1,5 +1,8 @@
 package technology.nrkk.demo.front.webclient;
 
+import com.newrelic.api.agent.HeaderType;
+import com.newrelic.api.agent.Headers;
+import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Trace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +17,7 @@ import technology.nrkk.demo.front.configs.properties.CatalogueProperties;
 import technology.nrkk.demo.front.entities.User;
 import technology.nrkk.demo.front.models.Product;
 import technology.nrkk.demo.front.models.Tags;
+import java.util.Map;
 
 @Component
 public class CatalogueClient {
@@ -28,6 +32,17 @@ public class CatalogueClient {
         this.properties = properties;
         this.restTemplate = builder
                 .additionalInterceptors((request, body, execution) -> {
+
+                    // Custom Headers class to collect traced headers
+                    NewRelicHeaders tracedHeaders = new NewRelicHeaders();
+                    // Collect New Relic traced headers
+                    NewRelic.getAgent().getTransaction().insertDistributedTraceHeaders(tracedHeaders);
+
+                    // Convert headers from custom Headers implementation to Spring's HttpHeaders
+                    Map<String, String> newRelicHeaders = tracedHeaders.getHeaderMap();
+                    for (Map.Entry<String, String> entry : newRelicHeaders.entrySet()) {
+                        request.getHeaders().set(entry.getKey(), entry.getValue());
+                    }
                     request.getHeaders().setContentType(MediaType.APPLICATION_JSON);
                     return execution.execute(request, body);
                 })
