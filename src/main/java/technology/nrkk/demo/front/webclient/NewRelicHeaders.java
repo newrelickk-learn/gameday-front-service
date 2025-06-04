@@ -2,14 +2,16 @@ package technology.nrkk.demo.front.webclient;
 
 import com.newrelic.api.agent.HeaderType;
 import com.newrelic.api.agent.Headers;
+import lombok.Getter;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Getter
 public class NewRelicHeaders implements Headers {
-    private Map<String, String> headerMap = new HashMap<>();
+    private final Map<String, String> headerMap = new HashMap<>();
 
     @Override
     public HeaderType getHeaderType() {
@@ -46,8 +48,4 @@ public class NewRelicHeaders implements Headers {
         return this.headerMap.containsKey(s);
     }
 
-    @Override
-    public Map<String, String> getHeaderMap() {
-        return headerMap;
-    }
 }
