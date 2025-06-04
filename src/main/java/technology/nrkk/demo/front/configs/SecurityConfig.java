@@ -56,7 +56,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .httpBasic(withDefaults())
-                .formLogin(withDefaults());
+                .formLogin((form) -> form
+                        .defaultSuccessUrl("/", true) // Redirect to '/' after successful login
+                        .permitAll());
 
         return http.build();
     }
