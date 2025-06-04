@@ -85,6 +85,7 @@ public class UserService implements UserDetailsService {
         SecurityContext ctx = SecurityContextHolder.getContext();
         ctx.setAuthentication(authentication);
         UserDetails userDetails = (UserDetails)ctx.getAuthentication().getPrincipal();
+        logger.info("User principal loaded ");
         return org.springframework.security.core.userdetails.User.withUserDetails(userDetails).build();
     }
 }

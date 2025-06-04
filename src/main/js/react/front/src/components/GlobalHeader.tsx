@@ -41,15 +41,15 @@ export const GlobalHeader: FC<GlobalHeaderProps> = ({ onLoadCart }) => {
         })
     }, [])
 
-    useEffect(() => {
-        NrAgent.log('Load Cart', { level: 'INFO'});
-        API.get(`/cart`).then((data) => {
-            onLoadCart(data);
-        }, (error) => {
-            NrAgent.log('Load Cart is failed', { level: 'ERROR'});
-            setErrorMessage("エラーが発生しました。しばらくお待ちください。 ERR-CART001")
-        })
-    }, [onLoadCart, setErrorMessage])
+    // useEffect(() => {
+    //     NrAgent.log('Load Cart', { level: 'INFO'});
+    //     API.get(`/cart`).then((data) => {
+    //         onLoadCart(data);
+    //     }, (error) => {
+    //         NrAgent.log('Load Cart is failed', { level: 'ERROR'});
+    //         setErrorMessage("エラーが発生しました。しばらくお待ちください。 ERR-CART001")
+    //     })
+    // }, [onLoadCart, setErrorMessage])
 
     const handleClickOpenCart = useCallback(() => {
         API.get(`/cart`).then((data) => {
