@@ -1,5 +1,6 @@
 package technology.nrkk.demo.front.controllers;
 
+import com.newrelic.api.agent.Trace;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,24 +22,28 @@ public class CatalogueController {
     @Autowired
     CatalogueClient client;
 
+    @Trace(dispatcher = true)
     @GetMapping(value={"/catalogue/items"}, produces = "application/json")
     public Product[] home(Principal principal, @RequestParam String tags) throws CatalogueClient.CatalogueClientException {
         User user = userService.getUserByPrincipal(principal);
         return client.search(tags, user);
     }
 
+    @Trace(dispatcher = true)
     @GetMapping(value={"/catalogue/item/{id}/image"}, produces = "application/json")
     public Product getImage(Principal principal, @PathVariable("id") String id) throws CatalogueClient.CatalogueClientException {
         User user = userService.getUserByPrincipal(principal);
         return client.get(id, user);
     }
 
+    @Trace(dispatcher = true)
     @GetMapping(value={"/catalogue/item/{id}"}, produces = "application/json")
     public Product getProduct(Principal principal, @PathVariable("id") String id) throws CatalogueClient.CatalogueClientException {
         User user = userService.getUserByPrincipal(principal);
         return client.get(id, user);
     }
 
+    @Trace(dispatcher = true)
     @GetMapping(value={"/catalogue/tags"}, produces = "application/json")
     public Tags getTags(Principal principal) throws CatalogueClient.CatalogueClientException {
         userService.getUserByPrincipal(principal);
