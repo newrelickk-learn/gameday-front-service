@@ -33,16 +33,16 @@ public class CatalogueClient {
         this.restTemplate = builder
                 .additionalInterceptors((request, body, execution) -> {
 
-                    // Custom Headers class to collect traced headers
-                    NewRelicHeaders tracedHeaders = new NewRelicHeaders();
-                    // Collect New Relic traced headers
-                    NewRelic.getAgent().getTransaction().insertDistributedTraceHeaders(tracedHeaders);
-
-                    // Convert headers from custom Headers implementation to Spring's HttpHeaders
-                    Map<String, String> newRelicHeaders = tracedHeaders.getHeaderMap();
-                    for (Map.Entry<String, String> entry : newRelicHeaders.entrySet()) {
-                        request.getHeaders().set(entry.getKey(), entry.getValue());
-                    }
+//                    // Custom Headers class to collect traced headers
+//                    NewRelicHeaders tracedHeaders = new NewRelicHeaders();
+//                    // Collect New Relic traced headers
+//                    NewRelic.getAgent().getTransaction().insertDistributedTraceHeaders(tracedHeaders);
+//
+//                    // Convert headers from custom Headers implementation to Spring's HttpHeaders
+//                    Map<String, String> newRelicHeaders = tracedHeaders.getHeaderMap();
+//                    for (Map.Entry<String, String> entry : newRelicHeaders.entrySet()) {
+//                        request.getHeaders().set(entry.getKey(), entry.getValue());
+//                    }
                     request.getHeaders().setContentType(MediaType.APPLICATION_JSON);
                     return execution.execute(request, body);
                 })
