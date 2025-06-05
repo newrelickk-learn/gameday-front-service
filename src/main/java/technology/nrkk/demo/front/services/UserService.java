@@ -70,6 +70,7 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userRepo.findByUsernameOrEmail(username, username);
+        NewRelic.ignoreTransaction();
         if(user.isEmpty()){
             throw new UsernameNotFoundException("User not exists by Username");
         }

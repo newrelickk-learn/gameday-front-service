@@ -27,10 +27,12 @@ public class TransactionNamingReactiveFilter implements HandlerInterceptor {
             if (ignoreTx) {
                 logger.info(path + " is ignoring transaction");
                 NewRelic.ignoreTransaction();
+                return true;
+            } else {
+                String transactionName = String.format("%s (%s)", path, method);
+                NewRelic.setTransactionName(null, transactionName);
+                logger.info(transactionName);
             }
-            String transactionName = String.format("%s (%s)", path, method);
-            NewRelic.setTransactionName(null, transactionName);
-            logger.info(transactionName);
         }
 
         return true;
