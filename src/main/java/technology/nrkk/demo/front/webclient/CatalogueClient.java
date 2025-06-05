@@ -55,6 +55,17 @@ public class CatalogueClient {
     @Trace
     public Product[] search(String tags, User user) throws CatalogueClientException {
         String userId = (user != null) ? user.getId().toString() : "";
+        // Custom Headers class to collect traced headers
+        NewRelicHeaders tracedHeaders = new NewRelicHeaders();
+        // Collect New Relic traced headers
+        NewRelic.getAgent().getTransaction().insertDistributedTraceHeaders(tracedHeaders);
+
+        // Convert headers from custom Headers implementation to Spring's HttpHeaders
+        Map<String, String> newRelicHeaders = tracedHeaders.getHeaderMap();
+        logger.info("# of headers %d".formatted(newRelicHeaders.size()));
+        for (Map.Entry<String, String> entry : newRelicHeaders.entrySet()) {
+            logger.info("Add header %s : %s".formatted(entry.getKey(), entry.getValue()));
+        }
         try {
             ResponseEntity<Product[]> response = this.restTemplate.getForEntity("%s/catalogue?tags=%s&user=uid_%s".formatted(this.properties.getUrl(), tags, userId), Product[].class);
             return response.getBody();
