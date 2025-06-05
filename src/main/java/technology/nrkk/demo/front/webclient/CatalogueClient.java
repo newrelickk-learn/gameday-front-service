@@ -41,6 +41,7 @@ public class CatalogueClient {
                     // Convert headers from custom Headers implementation to Spring's HttpHeaders
                     Map<String, String> newRelicHeaders = tracedHeaders.getHeaderMap();
                     for (Map.Entry<String, String> entry : newRelicHeaders.entrySet()) {
+                        logger.info("Add header %s : %s".formatted(entry.getKey(), entry.getValue()));
                         request.getHeaders().set(entry.getKey(), entry.getValue());
                     }
                     request.getHeaders().setContentType(MediaType.APPLICATION_JSON);
