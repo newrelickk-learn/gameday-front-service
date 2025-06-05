@@ -3,6 +3,8 @@ package technology.nrkk.demo.front.webclient;
 import com.newrelic.api.agent.HeaderType;
 import com.newrelic.api.agent.Headers;
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -12,6 +14,8 @@ import java.util.Map;
 @Getter
 public class NewRelicHeaders implements Headers {
     private final Map<String, String> headerMap = new HashMap<>();
+
+    protected final static Logger logger = LoggerFactory.getLogger(NewRelicHeaders.class);
 
     @Override
     public HeaderType getHeaderType() {
@@ -30,11 +34,13 @@ public class NewRelicHeaders implements Headers {
 
     @Override
     public void setHeader(String name, String value) {
+        logger.info("Set header %s : %s".formatted(name, value));
         headerMap.put(name, value);
     }
 
     @Override
     public void addHeader(String s, String s1) {
+        logger.info("Add header %s : %s".formatted(s, s1));
         this.headerMap.put(s, s1);
     }
 

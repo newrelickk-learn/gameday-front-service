@@ -29,8 +29,9 @@ public class CatalogueClient {
         this.properties = properties;
         this.restTemplate = builder
                 .additionalInterceptors((request, body, execution) -> {
+                    logger.info("Start intercept");
                     Transaction transaction = NewRelic.getAgent().getTransaction();
-                    logger.info("Intercept for headers %s".formatted(transaction.getToken().toString()));
+                    logger.info("Trace Method %s".formatted(transaction.getTracedMethod().getMetricName()));
 
                     // Custom Headers class to collect traced headers
                     NewRelicHeaders tracedHeaders = new NewRelicHeaders();
