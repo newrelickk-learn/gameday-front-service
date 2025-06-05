@@ -22,7 +22,7 @@ public class TransactionNamingReactiveFilter implements HandlerInterceptor {
         String method = request.getMethod();
 
         if (path != null && method != null){
-            boolean ignoreTx = request.getPathInfo()
+            boolean ignoreTx = path
                     .matches(ACTUATOR_ENDPOINT_PATTERN);
             if (ignoreTx) {
                 logger.info(path + " is ignoring transaction");
