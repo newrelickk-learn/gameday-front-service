@@ -31,6 +31,7 @@ public class CatalogueClient {
                 .additionalInterceptors((request, body, execution) -> {
                     logger.info("Start intercept");
                     Transaction transaction = NewRelic.getAgent().getTransaction();
+                    logger.info("Transaction mame set? %s".formatted(transaction.isTransactionNameSet()));
                     logger.info("Trace Method %s".formatted(transaction.getTracedMethod().getMetricName()));
 
                     // Custom Headers class to collect traced headers
@@ -40,6 +41,7 @@ public class CatalogueClient {
 
                     // Convert headers from custom Headers implementation to Spring's HttpHeaders
                     Map<String, String> newRelicHeaders = tracedHeaders.getHeaderMap();
+                    logger.info("# of headers %d".formatted(newRelicHeaders.size()));
                     for (Map.Entry<String, String> entry : newRelicHeaders.entrySet()) {
                         logger.info("Add header %s : %s".formatted(entry.getKey(), entry.getValue()));
                         request.getHeaders().set(entry.getKey(), entry.getValue());
