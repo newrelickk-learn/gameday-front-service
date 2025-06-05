@@ -59,7 +59,9 @@ public class CatalogueClient {
         NewRelicHeaders tracedHeaders = new NewRelicHeaders();
         // Collect New Relic traced headers
         NewRelic.getAgent().getTransaction().insertDistributedTraceHeaders(tracedHeaders);
-
+        if (NewRelic.getAgent().getTransaction().isWebTransaction()) {
+            logger.info("This is Web transaction");
+        }
         // Convert headers from custom Headers implementation to Spring's HttpHeaders
         Map<String, String> newRelicHeaders = tracedHeaders.getHeaderMap();
         logger.info("# of headers %d".formatted(newRelicHeaders.size()));
