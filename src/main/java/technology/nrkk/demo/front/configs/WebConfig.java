@@ -7,10 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.*;
 import org.thymeleaf.spring5.ISpringTemplateEngine;
 import org.thymeleaf.spring5.ISpringWebFluxTemplateEngine;
 import org.thymeleaf.spring5.SpringTemplateEngine;
@@ -20,6 +17,7 @@ import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.spring5.view.reactive.ThymeleafReactiveViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import technology.nrkk.demo.front.delegator.NewRelicDelegator;
+import technology.nrkk.demo.front.filters.TransactionNamingReactiveFilter;
 
 @Configuration
 @EnableWebMvc
@@ -54,6 +52,16 @@ class WebConfig implements ApplicationContextAware, WebMvcConfigurer {
         // "/resources/**" URIパターンにリクエストがあった場合、classpathの"/static/"にあるリソースとマッピングします
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/");
+    }
+
+    @Bean
+    public TransactionNamingReactiveFilter transactionNamingReactiveFilter() {
+        return new TransactionNamingReactiveFilter();
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(transactionNamingReactiveFilter());
     }
 
     @Bean("newrelic")
