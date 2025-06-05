@@ -1,9 +1,6 @@
 package technology.nrkk.demo.front.webclient;
 
-import com.newrelic.api.agent.HeaderType;
-import com.newrelic.api.agent.Headers;
-import com.newrelic.api.agent.NewRelic;
-import com.newrelic.api.agent.Trace;
+import com.newrelic.api.agent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,11 +29,13 @@ public class CatalogueClient {
         this.properties = properties;
         this.restTemplate = builder
                 .additionalInterceptors((request, body, execution) -> {
+                    Transaction transaction = NewRelic.getAgent().getTransaction();
+                    logger.info("Intercept for headers %s".formatted(transaction.getToken().toString()));
 
                     // Custom Headers class to collect traced headers
                     NewRelicHeaders tracedHeaders = new NewRelicHeaders();
                     // Collect New Relic traced headers
-                    NewRelic.getAgent().getTransaction().insertDistributedTraceHeaders(tracedHeaders);
+                    transaction.insertDistributedTraceHeaders(tracedHeaders);
 
                     // Convert headers from custom Headers implementation to Spring's HttpHeaders
                     Map<String, String> newRelicHeaders = tracedHeaders.getHeaderMap();
