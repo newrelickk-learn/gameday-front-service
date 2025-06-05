@@ -18,7 +18,7 @@ public class TransactionNamingReactiveFilter implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        String path = request.getPathInfo();
+        String path = request.getRequestURI();
         String method = request.getMethod();
 
         if (path != null && method != null){
