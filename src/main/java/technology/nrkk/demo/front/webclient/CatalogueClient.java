@@ -57,7 +57,7 @@ public class CatalogueClient {
             ResponseEntity<Product[]> response = this.restTemplate.getForEntity("%s/catalogue?tags=%s&user=uid_%s".formatted(this.properties.getUrl(), tags, userId), Product[].class);
             return response.getBody();
         } catch (RestClientException e) {
-            throw new CatalogueClientException("'/catalogue?tags=" + tags + "' does not work correctly");
+            throw new CatalogueClientException("'/catalogue?tags=" + tags + "' does not work correctly", e);
         }
     }
 
@@ -69,7 +69,7 @@ public class CatalogueClient {
             ResponseEntity<Product> response = this.restTemplate.getForEntity("%s/catalogue/%s?user=uid_%s".formatted(this.properties.getUrl(), id, userId), Product.class);
             return response.getBody();
         } catch (RestClientException e) {
-            throw new CatalogueClientException("'/catalogue/" + id + "' does not work correctly");
+            throw new CatalogueClientException("'/catalogue/" + id + "' does not work correctly", e);
         }
     }
 
@@ -80,13 +80,13 @@ public class CatalogueClient {
             ResponseEntity<Tags> response = this.restTemplate.getForEntity("%s/tags".formatted(this.properties.getUrl()), Tags.class);
             return response.getBody();
         } catch (RestClientException e) {
-            throw new CatalogueClientException("'/tags' does not work correctly");
+            throw new CatalogueClientException("'/tags' does not work correctly", e);
         }
     }
 
     public class CatalogueClientException extends Exception {
-        public CatalogueClientException(String message) {
-            super(message);
+        public CatalogueClientException(String message, Exception e) {
+            super(message, e);
         }
 
 
