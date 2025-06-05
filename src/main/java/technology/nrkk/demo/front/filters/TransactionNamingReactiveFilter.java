@@ -21,15 +21,13 @@ public class TransactionNamingReactiveFilter implements HandlerInterceptor {
         String path = request.getPathInfo();
         String method = request.getMethod();
 
-        boolean ignoreTx = request.getPathInfo()
-                .matches(ACTUATOR_ENDPOINT_PATTERN);
-
-        if (ignoreTx) {
-            logger.info(path + " is ignoring transaction");
-            NewRelic.ignoreTransaction();
-        }
-
-        if (path != null && method != null && !path.startsWith("/static")){
+        if (path != null && method != null){
+            boolean ignoreTx = request.getPathInfo()
+                    .matches(ACTUATOR_ENDPOINT_PATTERN);
+            if (ignoreTx) {
+                logger.info(path + " is ignoring transaction");
+                NewRelic.ignoreTransaction();
+            }
             String transactionName = String.format("%s (%s)", path, method);
             NewRelic.setTransactionName(null, transactionName);
             logger.info(transactionName);
