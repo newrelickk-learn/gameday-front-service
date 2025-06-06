@@ -31,8 +31,6 @@ public class CatalogueClient {
                 .additionalInterceptors((request, body, execution) -> {
                     logger.info("Start intercept");
                     Transaction transaction = NewRelic.getAgent().getTransaction();
-                    logger.info("Transaction mame set? %s".formatted(transaction.isTransactionNameSet()));
-                    logger.info("Trace Method %s".formatted(transaction.getTracedMethod().getMetricName()));
 
                     // Custom Headers class to collect traced headers
                     NewRelicHeaders tracedHeaders = new NewRelicHeaders();
@@ -52,8 +50,8 @@ public class CatalogueClient {
                 .build();
     }
 
-    @Trace
     public Product[] search(String tags, User user) throws CatalogueClientException {
+        Segment segment = NewRelic.getAgent().getTransaction().startSegment("CatalogueClient.search");
         String userId = (user != null) ? user.getId().toString() : "";
         // Custom Headers class to collect traced headers
         NewRelicHeaders tracedHeaders = new NewRelicHeaders();
@@ -73,6 +71,8 @@ public class CatalogueClient {
             return response.getBody();
         } catch (RestClientException e) {
             throw new CatalogueClientException("'/catalogue?tags=" + tags + "' does not work correctly", e);
+        } finally {
+            segment.end();
         }
     }
 
