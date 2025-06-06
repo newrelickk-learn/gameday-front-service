@@ -29,21 +29,6 @@ public class CatalogueClient {
         this.properties = properties;
         this.restTemplate = builder
                 .additionalInterceptors((request, body, execution) -> {
-                    logger.info("Start intercept");
-                    Transaction transaction = NewRelic.getAgent().getTransaction();
-
-                    // Custom Headers class to collect traced headers
-                    NewRelicHeaders tracedHeaders = new NewRelicHeaders();
-                    // Collect New Relic traced headers
-                    transaction.insertDistributedTraceHeaders(tracedHeaders);
-
-                    // Convert headers from custom Headers implementation to Spring's HttpHeaders
-                    Map<String, String> newRelicHeaders = tracedHeaders.getHeaderMap();
-                    logger.info("# of headers %d".formatted(newRelicHeaders.size()));
-                    for (Map.Entry<String, String> entry : newRelicHeaders.entrySet()) {
-                        logger.info("Add header %s : %s".formatted(entry.getKey(), entry.getValue()));
-                        request.getHeaders().set(entry.getKey(), entry.getValue());
-                    }
                     request.getHeaders().setContentType(MediaType.APPLICATION_JSON);
                     return execution.execute(request, body);
                 })
@@ -53,19 +38,6 @@ public class CatalogueClient {
     public Product[] search(String tags, User user) throws CatalogueClientException {
         Segment segment = NewRelic.getAgent().getTransaction().startSegment("CatalogueClient.search");
         String userId = (user != null) ? user.getId().toString() : "";
-        // Custom Headers class to collect traced headers
-        NewRelicHeaders tracedHeaders = new NewRelicHeaders();
-        // Collect New Relic traced headers
-        NewRelic.getAgent().getTransaction().insertDistributedTraceHeaders(tracedHeaders);
-        if (NewRelic.getAgent().getTransaction().isWebTransaction()) {
-            logger.info("This is Web transaction");
-        }
-        // Convert headers from custom Headers implementation to Spring's HttpHeaders
-        Map<String, String> newRelicHeaders = tracedHeaders.getHeaderMap();
-        logger.info("# of headers %d".formatted(newRelicHeaders.size()));
-        for (Map.Entry<String, String> entry : newRelicHeaders.entrySet()) {
-            logger.info("Add header %s : %s".formatted(entry.getKey(), entry.getValue()));
-        }
         try {
             ResponseEntity<Product[]> response = this.restTemplate.getForEntity("%s/catalogue?tags=%s&user=uid_%s".formatted(this.properties.getUrl(), tags, userId), Product[].class);
             return response.getBody();
