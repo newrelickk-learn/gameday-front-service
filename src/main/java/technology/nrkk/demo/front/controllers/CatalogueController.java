@@ -28,7 +28,6 @@ public class CatalogueController {
     CatalogueClient client;
 
     private final static Logger logger = LoggerFactory.getLogger(CatalogueController.class);
-    @Trace(dispatcher = true)
     @GetMapping(value={"/catalogue/items"}, produces = "application/json")
     public Product[] home(Principal principal, @RequestParam String tags) throws CatalogueClient.CatalogueClientException {
         logger.info("items controller");
@@ -61,7 +60,6 @@ public class CatalogueController {
         return client.get(id, user);
     }
 
-    @Trace(dispatcher = true)
     @GetMapping(value={"/catalogue/tags"}, produces = "application/json")
     public Tags getTags(Principal principal) throws CatalogueClient.CatalogueClientException {
         userService.getUserByPrincipal(principal);
