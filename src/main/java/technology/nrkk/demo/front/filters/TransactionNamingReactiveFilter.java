@@ -14,7 +14,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class TransactionNamingReactiveFilter implements HandlerInterceptor {
     private static final Logger logger = LoggerFactory.getLogger(TransactionNamingReactiveFilter.class);
-    private static final String ACTUATOR_ENDPOINT_PATTERN = "^(/actuator|/favicon|/static).*";
+    private static final String ACTUATOR_ENDPOINT_PATTERN = "^(/actuator|/favicon|/static|/login|/health).*";
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
