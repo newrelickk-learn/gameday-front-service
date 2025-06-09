@@ -14,12 +14,14 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
-public class TransactionNamingReactiveFilter implements HandlerInterceptor {
-    private static final Logger logger = LoggerFactory.getLogger(TransactionNamingReactiveFilter.class);
+public class TransactionNamingFilter implements HandlerInterceptor {
+    private static final Logger logger = LoggerFactory.getLogger(TransactionNamingFilter.class);
     private static final String ACTUATOR_ENDPOINT_PATTERN = "^(/actuator|/favicon|/static|/login|/health).*";
-    @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable ModelAndView modelAndView) throws Exception {
 
+    private static final String START_TIME = "startTime";
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String path = request.getRequestURI();
         String method = request.getMethod();
 
@@ -33,6 +35,24 @@ public class TransactionNamingReactiveFilter implements HandlerInterceptor {
                 NewRelic.setTransactionName(null, transactionName);
             }
         }
+
+        long startTime = System.currentTimeMillis();
+        request.setAttribute(START_TIME, startTime);
+        return true;
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        String method = request.getMethod();
+        String path = request.getRequestURI();
+        String contentType = request.getContentType();
+        int status = response.getStatus();
+        int size = response.getBufferSize();
+        long startTime = (long) request.getAttribute(START_TIME);
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+
+        logger.info("%s %s %s %d %d".formatted(method, path, contentType, status, size));
     }
 
 }

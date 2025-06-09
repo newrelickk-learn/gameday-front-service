@@ -6,18 +6,14 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.servlet.config.annotation.*;
 import org.thymeleaf.spring5.ISpringTemplateEngine;
-import org.thymeleaf.spring5.ISpringWebFluxTemplateEngine;
 import org.thymeleaf.spring5.SpringTemplateEngine;
-import org.thymeleaf.spring5.SpringWebFluxTemplateEngine;
 import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
-import org.thymeleaf.spring5.view.reactive.ThymeleafReactiveViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import technology.nrkk.demo.front.delegator.NewRelicDelegator;
-import technology.nrkk.demo.front.filters.TransactionNamingReactiveFilter;
+import technology.nrkk.demo.front.filters.TransactionNamingFilter;
 
 @Configuration
 @EnableWebMvc
@@ -55,8 +51,8 @@ class WebConfig implements ApplicationContextAware, WebMvcConfigurer {
     }
 
     @Bean
-    public TransactionNamingReactiveFilter transactionNamingReactiveFilter() {
-        return new TransactionNamingReactiveFilter();
+    public TransactionNamingFilter transactionNamingReactiveFilter() {
+        return new TransactionNamingFilter();
     }
 
     @Override

@@ -10,19 +10,4 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class IgnoreTransactionsReactiveFilter implements HandlerInterceptor {
-
-    private static final String ACTUATOR_ENDPOINT_PATTERN = "^(/actuator|/favicon|/static).*";
-    @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-
-        boolean ignoreTx = request.getPathInfo()
-                .matches(ACTUATOR_ENDPOINT_PATTERN);
-
-        if (ignoreTx){
-            NewRelic.ignoreTransaction();
-        }
-        return true;
-    }
-
-}
+public class IgnoreTransactionsReactiveFilter {}
