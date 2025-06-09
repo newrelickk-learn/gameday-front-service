@@ -52,8 +52,11 @@ public class TransactionNamingFilter implements HandlerInterceptor {
         long startTime = (long) request.getAttribute(START_TIME);
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
-
-        logger.info("%s %s %s %d %d %d ms".formatted(method, replacesPath, contentType, status, size, duration));
+        if (status > 500) {
+            logger.error("%s %s %s %d %d %d ms".formatted(method, replacesPath, contentType == null ? "-" : contentType, status, size, duration));
+        } else {
+            logger.info("%s %s %s %d %d %d ms".formatted(method, replacesPath, contentType == null ? "-" : contentType, status, size, duration));
+        }
     }
 
 }
