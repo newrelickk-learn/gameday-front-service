@@ -45,6 +45,7 @@ public class TransactionNamingFilter implements HandlerInterceptor {
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         String method = request.getMethod();
         String path = request.getRequestURI();
+        String replacesPath = "/error".equals(path) ? (String) request.getAttribute("jakarta.servlet.error.request_uri") : path;
         String contentType = request.getContentType();
         int status = response.getStatus();
         int size = response.getBufferSize();
@@ -52,7 +53,7 @@ public class TransactionNamingFilter implements HandlerInterceptor {
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
 
-        logger.info("%s %s %s %d %d".formatted(method, path, contentType, status, size));
+        logger.info("%s %s %s %d %d %d ms".formatted(method, replacesPath, contentType, status, size, duration));
     }
 
 }
