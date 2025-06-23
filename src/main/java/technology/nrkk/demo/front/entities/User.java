@@ -1,5 +1,6 @@
 package technology.nrkk.demo.front.entities;
 
+import com.newrelic.api.agent.NewRelic;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -36,5 +37,14 @@ public class User {
 
     public User() {
 
+    }
+
+    public String getRank() {
+        if (this.getId()%5  == 0) {
+            NewRelic.addCustomParameter("memberRank", "GoldMember");
+            return "GoldMember";
+        }
+        NewRelic.addCustomParameter("memberRank", "NormalMember");
+        return "Normal Member";
     }
 }

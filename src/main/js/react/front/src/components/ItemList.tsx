@@ -14,8 +14,9 @@ import {Alert, Snackbar} from "@mui/material";
 interface ItemListProps {
     onAddItem : (cart: any)=>void,
     tags: Array<string>,
+    searchQuery: string,
 }
-export const ItemList: FC<ItemListProps> = ({ onAddItem, tags }) => {
+export const ItemList: FC<ItemListProps> = ({ onAddItem, tags, searchQuery }) => {
 
     const [items, setItems] = useState([])
     const [errorMessage, setErrorMessage] = useState("")
@@ -25,13 +26,22 @@ export const ItemList: FC<ItemListProps> = ({ onAddItem, tags }) => {
 
     useEffect(() => {
 
-        API.get(`/catalogue/items?tags=${tags.join(',')}`).then((data) => {
-            setItems(data);
-        }, (error) => {
-            setErrorMessage("エラーが発生しました。しばらくお待ちください。ERR-TAG001")
-            throw error
-        })
-    }, [tags, setItems, setErrorMessage])
+        if (searchQuery.length > 0) {
+            API.get(`/catalogue/search`, {query: searchQuery}).then((data) => {
+                setItems(data);
+            }, (error) => {
+                setErrorMessage("エラーが発生しました。しばらくお待ちください。ERR-TAG001")
+                throw error
+            })
+        } else {
+            API.get(`/catalogue/items?tags=${tags.join(',')}`).then((data) => {
+                setItems(data);
+            }, (error) => {
+                setErrorMessage("エラーが発生しました。しばらくお待ちください。ERR-TAG001")
+                throw error
+            })
+        }
+    }, [tags, searchQuery, setItems, setErrorMessage])
 
     return (
         <>

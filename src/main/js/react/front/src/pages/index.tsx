@@ -6,14 +6,16 @@ import {CartContext} from "../contexts/context";
 import {API} from "../utils/api";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import {Alert, Checkbox, FormControlLabel, FormGroup, Snackbar} from "@mui/material";
+import {Alert, Checkbox, FormControlLabel, FormGroup, Snackbar, TextField} from "@mui/material";
 import CardMedia from "@mui/material/CardMedia";
+import debounce from 'lodash.debounce';
 
 export const Index = () => {
     const [cart, setCart] = useState<Cart>({id: 0, amount: 0, totalPrice: 0, items: []})
     const [tags, setTags] = useState<Array<string>>([])
     const [selectedTags, setSelectedTags] = useState<Array<string>>([])
     const [errorMessage, setErrorMessage] = useState("")
+    const [searchQuery, setSearchQuery] = useState("")
     const handleCloseAlert = useCallback(async () => {
         setErrorMessage("")
     }, [setErrorMessage])
@@ -41,6 +43,10 @@ export const Index = () => {
         setSelectedTags(newSelectedTags)
     }, [selectedTags, setSelectedTags])
 
+    const handleChangeSearch = debounce(useCallback((searchQuery: string) => {
+        setSearchQuery(searchQuery)
+    }, [setSearchQuery]), 500)
+
     return (
         <CartContext.Provider value={cart}>
             <GlobalHeader onLoadCart={handleUpdateCart}/>
@@ -50,6 +56,7 @@ export const Index = () => {
                 image={`https://demo.sockshop.nrkk.technology/img/top_banner.png`}
                 alt="green iguana"
             />
+            <TextField onChange={(e) => handleChangeSearch(e.target.value)} />
             <div className="main">
                 <Card sx={{ maxWidth: 345, margin: '16px', flexBasis: '500px', display: 'flex', flexDirection: 'column' }}>
                     <CardContent sx={{flexGrow: 1}}>
@@ -60,7 +67,7 @@ export const Index = () => {
                         </FormGroup>
                     </CardContent>
                 </Card>
-                <ItemList onAddItem={handleUpdateCart} tags={selectedTags}/>
+                <ItemList onAddItem={handleUpdateCart} tags={selectedTags} searchQuery={searchQuery}/>
             </div>
             <Snackbar open={errorMessage.length > 0} autoHideDuration={10000} onClose={handleCloseAlert}>
                 <Alert

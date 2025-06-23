@@ -16,6 +16,10 @@ repositories {
     mavenCentral()
 }
 
+def grpcVersion = '1.65.1'
+def awsSdkVersion = '2.31.66'
+def newrelicVersion = '8.21.0'
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -25,7 +29,14 @@ dependencies {
     implementation 'org.springframework.session:spring-session-jdbc'
     implementation 'org.thymeleaf:thymeleaf-spring5:3.1.2.RELEASE'
     implementation 'org.projectlombok:lombok:1.18.28'
-    implementation 'com.newrelic.agent.java:newrelic-api:8.21.0'
+    implementation "software.amazon.awssdk:bedrockruntime:${awsSdkVersion}"
+    implementation "software.amazon.awssdk:auth:${awsSdkVersion}"
+    implementation "software.amazon.awssdk:regions:${awsSdkVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation 'com.google.guava:guava:33.2.1-jre'
+    implementation 'io.qdrant:client:1.14.0'
+    implementation "com.newrelic.agent.java:newrelic-api:${newrelicVersion}"
     annotationProcessor 'org.projectlombok:lombok:1.18.28'
     runtimeOnly 'com.mysql:mysql-connector-j'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -46,7 +57,7 @@ tasks.named('test') {
 
 task downloadNewrelic(type: Download) {
     mkdir 'newrelic'
-    src 'https://download.newrelic.com/newrelic/java-agent/newrelic-agent/8.21.0/newrelic-java.zip'
+    src "https://download.newrelic.com/newrelic/java-agent/newrelic-agent/${newrelicVersion}/newrelic-java.zip"
     dest file('newrelic')
 }
 

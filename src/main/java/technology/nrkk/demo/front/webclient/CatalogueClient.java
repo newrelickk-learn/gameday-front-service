@@ -35,11 +35,15 @@ public class CatalogueClient {
                 .build();
     }
 
-    public Product[] search(String tags, User user) throws CatalogueClientException {
+    public Product[] search(String tags, User user, Integer... size) throws CatalogueClientException {
         Segment segment = NewRelic.getAgent().getTransaction().startSegment("CatalogueClient.search");
         String userId = (user != null) ? user.getId().toString() : "";
         try {
-            ResponseEntity<Product[]> response = this.restTemplate.getForEntity("%s/catalogue?tags=%s&user=uid_%s".formatted(this.properties.getUrl(), tags, userId), Product[].class);
+            String sizeOption = "&size=100";
+            if (size.length > 0 && size[0] != null) {
+                sizeOption = "&size=%d".formatted(size[0]);
+            }
+            ResponseEntity<Product[]> response = this.restTemplate.getForEntity(("%s/catalogue?tags=%s&user=uid_%s"+sizeOption).formatted(this.properties.getUrl(), tags, userId), Product[].class);
             return response.getBody();
         } catch (RestClientException e) {
             throw new CatalogueClientException("'/catalogue?tags=" + tags + "' does not work correctly", e);

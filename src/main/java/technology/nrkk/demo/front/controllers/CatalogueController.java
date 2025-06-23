@@ -5,19 +5,21 @@ import com.newrelic.api.agent.Trace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import technology.nrkk.demo.front.entities.User;
 import technology.nrkk.demo.front.models.Product;
 import technology.nrkk.demo.front.models.Tags;
+import technology.nrkk.demo.front.services.BedrockService;
+import technology.nrkk.demo.front.services.QdrantService;
 import technology.nrkk.demo.front.services.UserService;
 import technology.nrkk.demo.front.webclient.CatalogueClient;
 import technology.nrkk.demo.front.webclient.NewRelicHeaders;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RestController
 public class CatalogueController {
@@ -26,6 +28,10 @@ public class CatalogueController {
     UserService userService;
     @Autowired
     CatalogueClient client;
+    @Autowired
+    BedrockService bedrockService;
+    @Autowired
+    QdrantService qdrantService;
 
     private final static Logger logger = LoggerFactory.getLogger(CatalogueController.class);
     @GetMapping(value={"/catalogue/items"}, produces = "application/json")
@@ -53,6 +59,25 @@ public class CatalogueController {
     public Tags getTags(Principal principal) throws CatalogueClient.CatalogueClientException {
         userService.getUserByPrincipal(principal);
         return client.getTags();
+    }
+
+    @PostMapping(value={"/catalogue/search"}, produces = "application/json")
+    public Product[] search(Principal principal, @RequestParam String query) throws CatalogueClient.CatalogueClientException {
+        User user = userService.getUserByPrincipal(principal);
+        if (Objects.equals(user.getRank(), "GoldMember")) {
+            List<Float> vectors = bedrockService.getEmbedding(query);
+            List<QdrantService.SearchResult> result = qdrantService.searchProducts(vectors, 10, null);
+            return result.stream().map(QdrantService.SearchResult::getId).map(id ->{
+                try {
+                    return client.get(id, user);
+                } catch (CatalogueClient.CatalogueClientException e) {
+                    throw new RuntimeException(e);
+                }
+            }).toList().toArray(Product[]::new);
+        } else {
+            NewRelic.addCustomParameter("memberRank", "NormalMember");
+            return client.search(query, user);
+        }
     }
 
 }
