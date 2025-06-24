@@ -19,16 +19,19 @@ interface ItemListProps {
 export const ItemList: FC<ItemListProps> = ({ onAddItem, tags, searchQuery }) => {
 
     const [items, setItems] = useState([])
+    const [description, setDescription] = useState("")
     const [errorMessage, setErrorMessage] = useState("")
     const handleCloseAlert = useCallback(async () => {
         setErrorMessage("")
+        setDescription("")
     }, [setErrorMessage])
 
     useEffect(() => {
 
         if (searchQuery.length > 0) {
-            API.get(`/catalogue/search`, {query: searchQuery}).then((data) => {
-                setItems(data);
+            API.post(`/catalogue/search`, {query: searchQuery}).then((data) => {
+                setItems(data.products);
+                setDescription(data.description);
             }, (error) => {
                 setErrorMessage("エラーが発生しました。しばらくお待ちください。ERR-TAG001")
                 throw error
@@ -41,7 +44,7 @@ export const ItemList: FC<ItemListProps> = ({ onAddItem, tags, searchQuery }) =>
                 throw error
             })
         }
-    }, [tags, searchQuery, setItems, setErrorMessage])
+    }, [tags, searchQuery, setItems, setErrorMessage, setDescription])
 
     return (
         <>
@@ -65,6 +68,16 @@ export const ItemList: FC<ItemListProps> = ({ onAddItem, tags, searchQuery }) =>
                     sx={{width: '100%'}}
                 >
                     {errorMessage}
+                </Alert>
+            </Snackbar>
+            <Snackbar open={description.length > 0} autoHideDuration={120000} onClose={handleCloseAlert}>
+                <Alert
+                    onClose={handleCloseAlert}
+                    severity="success"
+                    variant="filled"
+                    sx={{width: '100%'}}
+                >
+                    {description}
                 </Alert>
             </Snackbar>
         </>

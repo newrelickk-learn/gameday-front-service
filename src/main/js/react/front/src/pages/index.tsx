@@ -6,8 +6,9 @@ import {CartContext} from "../contexts/context";
 import {API} from "../utils/api";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import {Alert, Checkbox, FormControlLabel, FormGroup, Snackbar, TextField} from "@mui/material";
+import {Alert, Checkbox, FormControlLabel, FormGroup, InputAdornment, Snackbar, TextField} from "@mui/material";
 import CardMedia from "@mui/material/CardMedia";
+import SearchIcon from '@mui/icons-material/Search';
 import debounce from 'lodash.debounce';
 
 export const Index = () => {
@@ -56,7 +57,17 @@ export const Index = () => {
                 image={`https://demo.sockshop.nrkk.technology/img/top_banner.png`}
                 alt="green iguana"
             />
-            <TextField onChange={(e) => handleChangeSearch(e.target.value)} />
+            <TextField
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon />
+                            </InputAdornment>
+                        ),
+                    },
+                }}
+                onChange={(e) => handleChangeSearch(e.target.value)} />
             <div className="main">
                 <Card sx={{ maxWidth: 345, margin: '16px', flexBasis: '500px', display: 'flex', flexDirection: 'column' }}>
                     <CardContent sx={{flexGrow: 1}}>

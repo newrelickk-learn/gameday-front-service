@@ -1,5 +1,6 @@
 package technology.nrkk.demo.front.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -10,14 +11,14 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeAsyncClient;
-import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelRequest;
-import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
+import software.amazon.awssdk.services.bedrockruntime.model.*;
 import technology.nrkk.demo.front.newrelic.SampleLlmTokenCountCallback;
 import technology.nrkk.demo.front.newrelic.BedrockTokenCountCache;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class BedrockService {
@@ -25,8 +26,10 @@ public class BedrockService {
     private final BedrockRuntimeAsyncClient bedrockClient;
     private final ObjectMapper objectMapper;
 
-    @org.springframework.beans.factory.annotation.Value("${aws.bedrock.titan-embedding-model-id}")
-    private String titanEmbeddingModelId;
+    @org.springframework.beans.factory.annotation.Value("${aws.bedrock.embedding-model-id}")
+    private String embeddingModelId;
+    @org.springframework.beans.factory.annotation.Value("${aws.bedrock.model-id}")
+    private String modelId;
 
 
     public BedrockService(
@@ -43,13 +46,39 @@ public class BedrockService {
         NewRelic.getAgent().getAiMonitoring().setLlmTokenCountCallback(new SampleLlmTokenCountCallback());
     }
 
+    public String getDescription(String prompt) {
+
+        var message = Message.builder()
+                .content(ContentBlock.fromText(prompt))
+                .role(ConversationRole.USER)
+                .build();
+        ConverseRequest request = ConverseRequest.builder()
+                .modelId(modelId)
+                .messages(message)
+                .inferenceConfig(config -> config
+                                .maxTokens(500)     // The maximum response length
+                                .temperature(0.5F)  // Using temperature for randomness control
+                        //.topP(0.9F)       // Alternative: use topP instead of temperature
+                ).build();
+        try {
+            CompletableFuture<ConverseResponse> asyncResponse = this.bedrockClient.converse(request);
+            return asyncResponse.thenApply(
+                    response -> response.output().message().content().get(0).text()
+            ).get();
+
+        } catch (Exception e) {
+            System.err.printf("Can't invoke '%s': %s", modelId, e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
     public List<Float> getEmbedding(String text) {
         try {
             ObjectNode requestBody = objectMapper.createObjectNode();
             requestBody.put("inputText", text);
 
             InvokeModelRequest request = InvokeModelRequest.builder()
-                    .modelId(titanEmbeddingModelId)
+                    .modelId(embeddingModelId)
                     .contentType("application/json")
                     .accept("application/json")
                     .body(SdkBytes.fromByteArray(requestBody.toString().getBytes(StandardCharsets.UTF_8)))
@@ -81,6 +110,8 @@ public class BedrockService {
             throw new RuntimeException("Failed to process Bedrock embedding: " + e.getMessage(), e);
         }
     }
+
+
 
     public void shutdown() {
         if (bedrockClient != null) {

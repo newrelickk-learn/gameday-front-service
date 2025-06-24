@@ -1,5 +1,6 @@
 package technology.nrkk.demo.front.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Trace;
 import org.slf4j.Logger;
@@ -8,10 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import technology.nrkk.demo.front.entities.User;
 import technology.nrkk.demo.front.models.Product;
+import technology.nrkk.demo.front.models.SearchRequest;
+import technology.nrkk.demo.front.models.SearchResponse;
 import technology.nrkk.demo.front.models.Tags;
 import technology.nrkk.demo.front.services.BedrockService;
 import technology.nrkk.demo.front.services.QdrantService;
 import technology.nrkk.demo.front.services.UserService;
+import technology.nrkk.demo.front.utils.ProductSummaryPromptUtil;
 import technology.nrkk.demo.front.webclient.CatalogueClient;
 import technology.nrkk.demo.front.webclient.NewRelicHeaders;
 
@@ -19,6 +23,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @RestController
@@ -62,21 +67,30 @@ public class CatalogueController {
     }
 
     @PostMapping(value={"/catalogue/search"}, produces = "application/json")
-    public Product[] search(Principal principal, @RequestParam String query) throws CatalogueClient.CatalogueClientException {
+    public SearchResponse search(Principal principal, @RequestBody SearchRequest searchRequest) throws CatalogueClient.CatalogueClientException, ExecutionException, InterruptedException, JsonProcessingException {
         User user = userService.getUserByPrincipal(principal);
         if (Objects.equals(user.getRank(), "GoldMember")) {
-            List<Float> vectors = bedrockService.getEmbedding(query);
+            List<Float> vectors = bedrockService.getEmbedding(searchRequest.getQuery());
             List<QdrantService.SearchResult> result = qdrantService.searchProducts(vectors, 10, null);
-            return result.stream().map(QdrantService.SearchResult::getId).map(id ->{
+            List<Product> productList = result.stream().map(QdrantService.SearchResult::getPayload).map(payload ->{
                 try {
+                    String id = payload.get("sockId").getStringValue();
                     return client.get(id, user);
                 } catch (CatalogueClient.CatalogueClientException e) {
-                    throw new RuntimeException(e);
+                    logger.error("Error fetching product with ID: " + payload.get("sockId").getStringValue(), e);
+                    return null;
                 }
-            }).toList().toArray(Product[]::new);
+            }).filter(Objects::nonNull).toList();
+            Product[] products = productList.subList(0, Math.min(4, productList.size()-1)).toArray(Product[]::new);
+            SearchResponse response = new SearchResponse();
+            response.setProducts(products);
+            response.setDescription(bedrockService.getDescription(ProductSummaryPromptUtil.getProductSummaryPrompt(searchRequest.getQuery(), products)));
+            return response;
         } else {
             NewRelic.addCustomParameter("memberRank", "NormalMember");
-            return client.search(query, user);
+            SearchResponse response = new SearchResponse();
+            response.setProducts(client.search(searchRequest.getQuery(), user));
+            return response;
         }
     }
 
