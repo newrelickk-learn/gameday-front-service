@@ -48,7 +48,7 @@ public class BedrockService {
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .build();
         this.objectMapper = new ObjectMapper();
-        NewRelic.getAgent().getAiMonitoring().setLlmTokenCountCallback(new SampleLlmTokenCountCallback());
+        //NewRelic.getAgent().getAiMonitoring().setLlmTokenCountCallback(new SampleLlmTokenCountCallback());
     }
 
     public String getDescriptionWithConverse(String prompt) {
