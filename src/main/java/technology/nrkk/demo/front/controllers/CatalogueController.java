@@ -70,6 +70,7 @@ public class CatalogueController {
     public SearchResponse search(Principal principal, @RequestBody SearchRequest searchRequest) throws CatalogueClient.CatalogueClientException, ExecutionException, InterruptedException, JsonProcessingException {
         User user = userService.getUserByPrincipal(principal);
         if (Objects.equals(user.getRank(), "GoldMember")) {
+            NewRelic.addCustomParameter("bedrockSearch", true);
             List<Float> vectors = bedrockService.getEmbedding(searchRequest.getQuery());
             List<QdrantService.SearchResult> result = qdrantService.searchProducts(vectors, 10, null);
             List<Product> productList = result.stream().map(QdrantService.SearchResult::getPayload).map(payload ->{
@@ -88,6 +89,7 @@ public class CatalogueController {
             return response;
         } else {
             NewRelic.addCustomParameter("memberRank", "NormalMember");
+            NewRelic.addCustomParameter("bedrockSearch", false);
             SearchResponse response = new SearchResponse();
             response.setProducts(client.search(searchRequest.getQuery(), user));
             return response;

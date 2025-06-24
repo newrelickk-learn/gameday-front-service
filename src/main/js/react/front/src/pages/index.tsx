@@ -58,6 +58,7 @@ export const Index = () => {
                 alt="green iguana"
             />
             <TextField
+                id={'search'}
                 slotProps={{
                     input: {
                         startAdornment: (
