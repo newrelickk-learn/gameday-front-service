@@ -82,6 +82,16 @@ spec:
           value: "true"
         - name: RAILS_MAX_THREADS
           value: "2"
+        - name: AWS_CREDENTIALS_ACCESS-KEY-ID
+          valueFrom:
+            secretKeyRef:
+              key: AWS_ACCESS_KEY_ID
+              name: front-service-secrets
+        - name: AWS_CREDENTIALS_SECRET-ACCESS-KEY
+          valueFrom:
+            secretKeyRef:
+              key: AWS_SECRET_ACCESS_KEY
+              name: front-service-secrets
         image: public.ecr.aws/g7c8o4c7/front-service:latest
         imagePullPolicy: Always
         livenessProbe:
