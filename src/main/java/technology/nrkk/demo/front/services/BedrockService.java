@@ -15,8 +15,11 @@ import software.amazon.awssdk.services.bedrockruntime.model.*;
 import technology.nrkk.demo.front.newrelic.SampleLlmTokenCountCallback;
 import technology.nrkk.demo.front.newrelic.BedrockTokenCountCache;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -46,7 +49,7 @@ public class BedrockService {
         NewRelic.getAgent().getAiMonitoring().setLlmTokenCountCallback(new SampleLlmTokenCountCallback());
     }
 
-    public String getDescription(String prompt) {
+    public String getDescriptionWithConverse(String prompt) {
 
         var message = Message.builder()
                 .content(ContentBlock.fromText(prompt))
@@ -111,7 +114,55 @@ public class BedrockService {
         }
     }
 
+    public String getDescription(String prompt) {
+        // Titanモデルのリクエストボディを構築
+        ObjectNode requestBody = this.objectMapper.createObjectNode();
+        ObjectNode messageNode = objectMapper.createObjectNode();
+        messageNode.put("role", ConversationRole.USER.toString());
+        ObjectNode contentNode = objectMapper.createObjectNode();
+        contentNode.put("text", prompt);
+        messageNode.putIfAbsent("content", this.objectMapper.valueToTree(List.of(contentNode)));
+         requestBody.putIfAbsent("messages", this.objectMapper.valueToTree(List.of(messageNode)));
 
+        SdkBytes body;
+        try {
+            body = SdkBytes.fromUtf8String(this.objectMapper.writeValueAsString(requestBody));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("リクエストボディのシリアライズに失敗しました: " + e.getMessage(), e);
+        }
+
+        InvokeModelRequest request = InvokeModelRequest.builder()
+                .modelId(modelId)
+                .contentType("application/json")
+                .accept("application/json")
+                .body(body)
+                .build();
+
+        // InvokeModelは同期APIですが、元のコードがCompletableFutureを使用していたため、
+        // 形式を合わせるためにCompletableFutureでラップします。
+        // 実際の非同期処理が必要な場合は、bedrockClient.invokeModelAsync(request) を使用し、
+        // それからthenApplyなどを利用します。
+            try {
+                CompletableFuture<InvokeModelResponse> response = bedrockClient.invokeModel(request);
+                JsonNode jsonResponse = this.objectMapper.readTree(response.get().body().asString(StandardCharsets.UTF_8));
+
+                // TitanモデルのレスポンスからoutputTextを取得
+                if (jsonResponse.has("output")
+                        && jsonResponse.get("output").has("message")
+                        && jsonResponse.get("output").get("message").has("content")
+                        && jsonResponse.get("output").get("message").get("content").isArray()) {
+                    return jsonResponse.get("output").get("message").get("content").get(0).get("text").asText();
+                } else {
+                    throw new RuntimeException("レスポンスに 'output.message.content' が見つからないか、形式が不正です: " + jsonResponse.toString());
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("レスポンスボディのデシリアライズに失敗しました: " + e.getMessage(), e);
+            } catch (Exception e) {
+                // その他のBedrock呼び出しエラー
+                throw new RuntimeException(String.format("モデル'%s'の呼び出し中にエラーが発生しました: %s", modelId, e.getMessage()), e);
+            }
+
+    }
 
     public void shutdown() {
         if (bedrockClient != null) {
