@@ -79,7 +79,7 @@ spec:
         - name: QDRANT_HOST
           value: qdrant.qdrant
         - name: JVM_OPTS
-          value: "-Dcatalogue.url=http://catalogue-web -Dspring.datasource.url=jdbc:mysql://front-db:3306/db -Dspring.datasource.username=frontservice -Dspring.datasource.password=frontservice_password"
+          value: "-Dcatalogue.url=http://catalogue-web -Dspring.datasource.url=jdbc:mysql://front-db:3306/db -Dspring.datasource.username=frontservice -Dspring.datasource.password=frontservice_password -Dnewrelic.config.ai_monitoring.enabled=true -Dnewrelic.config.custom_insights_events.max_samples_stored=100000 -Dnewrelic.config.span_events.max_samples_stored=10000"
         - name: RAILS_LOG_TO_STDOUT
           value: "true"
         - name: RAILS_MAX_THREADS
