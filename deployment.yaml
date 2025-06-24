@@ -74,6 +74,8 @@ spec:
           value: "false"
         - name: NEW_RELIC_JFR_ENABLED
           value: "true"
+        - name: NEW_RELIC_AI_MONITORING_ENABLED
+          value: "true"
         - name: QDRANT_HOST
           value: qdrant.qdrant
         - name: JVM_OPTS
