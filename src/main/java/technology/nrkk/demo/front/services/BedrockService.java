@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.newrelic.api.agent.NewRelic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -34,7 +36,7 @@ public class BedrockService {
     @org.springframework.beans.factory.annotation.Value("${aws.bedrock.model-id}")
     private String modelId;
 
-
+    private final static Logger logger = LoggerFactory.getLogger(BedrockService.class);
     public BedrockService(
             @org.springframework.beans.factory.annotation.Value("${aws.region}") String region,
             @org.springframework.beans.factory.annotation.Value("${aws.credentials.access-key-id}") String awsAccessKeyId,
@@ -115,6 +117,7 @@ public class BedrockService {
     }
 
     public String getDescription(String prompt) {
+        NewRelic.addCustomParameter("bedrockModelId", modelId);
         // Titanモデルのリクエストボディを構築
         ObjectNode requestBody = this.objectMapper.createObjectNode();
         ObjectNode messageNode = objectMapper.createObjectNode();
@@ -122,7 +125,7 @@ public class BedrockService {
         ObjectNode contentNode = objectMapper.createObjectNode();
         contentNode.put("text", prompt);
         messageNode.putIfAbsent("content", this.objectMapper.valueToTree(List.of(contentNode)));
-         requestBody.putIfAbsent("messages", this.objectMapper.valueToTree(List.of(messageNode)));
+        requestBody.putIfAbsent("messages", this.objectMapper.valueToTree(List.of(messageNode)));
 
         SdkBytes body;
         try {
@@ -130,6 +133,8 @@ public class BedrockService {
         } catch (JsonProcessingException e) {
             throw new RuntimeException("リクエストボディのシリアライズに失敗しました: " + e.getMessage(), e);
         }
+        NewRelic.addCustomParameter("bedrockModelId", modelId);
+        NewRelic.addCustomParameter("bedrockUsed", true);
 
         InvokeModelRequest request = InvokeModelRequest.builder()
                 .modelId(modelId)
@@ -151,6 +156,7 @@ public class BedrockService {
                         && jsonResponse.get("output").has("message")
                         && jsonResponse.get("output").get("message").has("content")
                         && jsonResponse.get("output").get("message").get("content").isArray()) {
+                    logger.info("Response from Bedrock model: " + modelId + "completed successfully.");
                     return jsonResponse.get("output").get("message").get("content").get(0).get("text").asText();
                 } else {
                     throw new RuntimeException("レスポンスに 'output.message.content' が見つからないか、形式が不正です: " + jsonResponse.toString());
