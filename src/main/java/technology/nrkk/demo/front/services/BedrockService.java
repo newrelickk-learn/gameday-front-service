@@ -96,8 +96,7 @@ public class BedrockService {
         if (Objects.equals(mode, "Premium")) {
             int randomInt = random.nextInt(6);
             return switch (randomInt) {
-                case 0 -> getDescriptionWithClaudeLegacy(prompt);
-                case 1, 2 -> getDescriptionWithClaudeHaiku3(prompt);
+                case 0, 1, 2 -> getDescriptionWithClaudeLegacy(prompt);
                 default -> throw new RuntimeException("We cannot call the Bedrock");
             };
         } else {
