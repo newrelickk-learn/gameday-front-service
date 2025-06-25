@@ -72,6 +72,7 @@ export const ItemList: FC<ItemListProps> = ({ onAddItem, tags, searchQuery }) =>
             </Snackbar>
             <Snackbar open={description.length > 0} autoHideDuration={120000} onClose={handleCloseAlert}>
                 <Alert
+                    id='description'
                     onClose={handleCloseAlert}
                     severity="success"
                     variant="filled"
