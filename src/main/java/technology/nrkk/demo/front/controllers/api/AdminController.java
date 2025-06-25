@@ -46,7 +46,7 @@ public class AdminController {
                 vectors = bedrockService.getEmbedding(text);
                 vectorMap.put(text, vectors);
             }
-            return new QdrantService.ProductDataForQdrant(product.getId(), vectors, Map.of("description", text));
+            return new QdrantService.ProductDataForQdrant(product.getId(), vectors, Map.of("sockId", product.getId(), "description", text));
         }).toList();
         NewRelic.addCustomParameter("uniqueTextCount", vectorMap.size());
         qdrantService.upsertProducts(productDataForQdrantList);
@@ -62,4 +62,35 @@ public class AdminController {
         logger.info(result.get(0).getId());
         return ResponseEntity.ok().build();
     }
+
+    @Trace(dispatcher = true)
+    //@RequestMapping(value ="/admin/test/nova")
+    public ResponseEntity<Void> nova() throws CatalogueClient.CatalogueClientException {
+        String description = bedrockService.getDescription("薄い男性用のしっかりした靴下が欲しい", "Premium");
+        logger.info(description);
+        return ResponseEntity.ok().build();
+    }
+    @Trace(dispatcher = true)
+    //@RequestMapping(value ="/admin/test/titan")
+    public ResponseEntity<Void> titan() throws CatalogueClient.CatalogueClientException {
+        String description = bedrockService.getDescriptionWithTitan("薄い男性用のしっかりした靴下が欲しい");
+        logger.info(description);
+        return ResponseEntity.ok().build();
+    }
+    @Trace(dispatcher = true)
+    //@RequestMapping(value ="/admin/test/haiku3")
+    public ResponseEntity<Void> haiku3() {
+        String description = bedrockService.getDescriptionWithClaudeHaiku3("薄い男性用のしっかりした靴下が欲しい");
+        logger.info(description);
+        return ResponseEntity.ok().build();
+    }
+    @Trace(dispatcher = true)
+    //@RequestMapping(value ="/admin/test/legacy")
+    public ResponseEntity<Void> legacy() throws CatalogueClient.CatalogueClientException {
+        String description = bedrockService.getDescriptionWithClaudeLegacy("薄い男性用のしっかりした靴下が欲しい");
+        logger.info(description);
+        return ResponseEntity.ok().build();
+    }
+
+
 }

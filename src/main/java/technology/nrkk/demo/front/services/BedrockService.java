@@ -20,6 +20,7 @@ import technology.nrkk.demo.front.newrelic.BedrockTokenCountCache;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -49,32 +50,6 @@ public class BedrockService {
                 .build();
         this.objectMapper = new ObjectMapper();
         //NewRelic.getAgent().getAiMonitoring().setLlmTokenCountCallback(new SampleLlmTokenCountCallback());
-    }
-
-    public String getDescriptionWithConverse(String prompt) {
-
-        var message = Message.builder()
-                .content(ContentBlock.fromText(prompt))
-                .role(ConversationRole.USER)
-                .build();
-        ConverseRequest request = ConverseRequest.builder()
-                .modelId(modelId)
-                .messages(message)
-                .inferenceConfig(config -> config
-                                .maxTokens(500)     // The maximum response length
-                                .temperature(0.5F)  // Using temperature for randomness control
-                        //.topP(0.9F)       // Alternative: use topP instead of temperature
-                ).build();
-        try {
-            CompletableFuture<ConverseResponse> asyncResponse = this.bedrockClient.converse(request);
-            return asyncResponse.thenApply(
-                    response -> response.output().message().content().get(0).text()
-            ).get();
-
-        } catch (Exception e) {
-            System.err.printf("Can't invoke '%s': %s", modelId, e.getMessage());
-            throw new RuntimeException(e);
-        }
     }
 
     public List<Float> getEmbedding(String text) {
@@ -116,15 +91,26 @@ public class BedrockService {
         }
     }
 
-    public String getDescription(String prompt) {
-        int randomInt = random.nextInt(5);
-        return switch (randomInt) {
-            case 0 -> getDescriptionWithClaudeHaiku3(prompt);
-            case 1 -> getDescriptionWithTitan(prompt);
-            default -> getDescriptionWithNova(prompt);
-        };
+    public String getDescription(String prompt, String mode) {
+        NewRelic.addCustomParameter("bedrockMode", mode);
+        if (Objects.equals(mode, "Premium")) {
+            int randomInt = random.nextInt(6);
+            return switch (randomInt) {
+                case 0 -> getDescriptionWithClaudeLegacy(prompt);
+                case 1, 2 -> getDescriptionWithClaudeHaiku3(prompt);
+                default -> throw new RuntimeException("We cannot call the Bedrock");
+            };
+        } else {
+            int randomInt = random.nextInt(5);
+            return switch (randomInt) {
+                case 0, 1, 2 -> getDescriptionWithTitan(prompt);
+                default -> throw new RuntimeException("We cannot call the Bedrock");
+            };
+        }
     }
     public String getDescriptionWithNova(String prompt) {
+        NewRelic.addCustomParameter("bedrockModelId", modelId);
+        logger.info("Using Bedrock model: " + modelId);
         NewRelic.addCustomParameter("bedrockModelId", modelId);
 
         ObjectNode requestBody = this.objectMapper.createObjectNode();
@@ -175,6 +161,7 @@ public class BedrockService {
 
     public String getDescriptionWithTitan(String prompt) {
         var modelId = "amazon.titan-text-express-v1";
+        logger.info("Using Bedrock model: " + modelId);
         NewRelic.addCustomParameter("bedrockModelId", modelId);
         ObjectNode requestBody = this.objectMapper.createObjectNode();
         requestBody.put("inputText", prompt);
@@ -215,6 +202,7 @@ public class BedrockService {
 
     public String getDescriptionWithClaudeHaiku3(String prompt) {
         var modelId = "anthropic.claude-3-haiku-20240307-v1:0";
+        logger.info("Using Bedrock model: " + modelId);
         NewRelic.addCustomParameter("bedrockModelId", modelId);
         ObjectNode requestBody = this.objectMapper.createObjectNode();
         requestBody.put("anthropic_version", "bedrock-2023-05-31");
@@ -258,11 +246,51 @@ public class BedrockService {
         }
 
     }
+    public String getDescriptionWithClaudeLegacy(String prompt) {
+        var modelId = "anthropic.claude-instant-v1";
+        logger.info("Using Bedrock model: " + modelId);
+        NewRelic.addCustomParameter("bedrockModelId", modelId);
+        ObjectNode requestBody = this.objectMapper.createObjectNode();
+        requestBody.put("anthropic_version", "bedrock-2023-05-31");
+        requestBody.put("max_tokens_to_sample", 512); // 最大トークン数を設定
+        ObjectNode messageNode = objectMapper.createObjectNode();
+        messageNode.put("role", ConversationRole.USER.toString());
+        messageNode.put("content", "\n\nHuman: %s".formatted(prompt));
+        requestBody.put("prompt", "\n\nHuman: %s\n\nAssistant:".formatted(prompt));
 
-    public void shutdown() {
-        if (bedrockClient != null) {
-            bedrockClient.close();
-            System.out.println("BedrockRuntimeClient shut down.");
+        //requestBody.putIfAbsent("messages", this.objectMapper.valueToTree(List.of(messageNode)));
+
+        SdkBytes body;
+        try {
+            body = SdkBytes.fromUtf8String(this.objectMapper.writeValueAsString(requestBody));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("リクエストボディのシリアライズに失敗しました: " + e.getMessage(), e);
         }
+        NewRelic.addCustomParameter("bedrockModelId", modelId);
+        NewRelic.addCustomParameter("bedrockUsed", true);
+
+        InvokeModelRequest request = InvokeModelRequest.builder()
+                .modelId(modelId)
+                .contentType("application/json")
+                .accept("application/json")
+                .body(body)
+                .build();
+
+        try {
+            CompletableFuture<InvokeModelResponse> response = bedrockClient.invokeModel(request);
+            JsonNode jsonResponse = this.objectMapper.readTree(response.get().body().asString(StandardCharsets.UTF_8));
+
+            if (jsonResponse.has("completion")) {
+                logger.info("Response from Bedrock model: " + modelId + "completed successfully.");
+                return jsonResponse.get("completion").asText();
+            } else {
+                throw new RuntimeException("レスポンスに 'results.0.outputText' が見つからないか、形式が不正です: " + jsonResponse.toString());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("レスポンスボディのデシリアライズに失敗しました: " + e.getMessage(), e);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("モデル'%s'の呼び出し中にエラーが発生しました: %s", modelId, e.getMessage()), e);
+        }
+
     }
 }

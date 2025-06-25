@@ -69,31 +69,24 @@ public class CatalogueController {
     @PostMapping(value={"/catalogue/search"}, produces = "application/json")
     public SearchResponse search(Principal principal, @RequestBody SearchRequest searchRequest) throws CatalogueClient.CatalogueClientException, ExecutionException, InterruptedException, JsonProcessingException {
         User user = userService.getUserByPrincipal(principal);
-        if (Objects.equals(user.getRank(), "GoldMember")) {
-            NewRelic.addCustomParameter("bedrockSearch", true);
-            List<Float> vectors = bedrockService.getEmbedding(searchRequest.getQuery());
-            List<QdrantService.SearchResult> result = qdrantService.searchProducts(vectors, 10, null);
-            List<Product> productList = result.stream().map(QdrantService.SearchResult::getPayload).map(payload ->{
-                try {
-                    String id = payload.get("sockId").getStringValue();
-                    return client.get(id, user);
-                } catch (CatalogueClient.CatalogueClientException e) {
-                    logger.error("Error fetching product with ID: " + payload.get("sockId").getStringValue(), e);
-                    return null;
-                }
-            }).filter(Objects::nonNull).toList();
-            Product[] products = productList.subList(0, Math.min(4, productList.size()-1)).toArray(Product[]::new);
-            SearchResponse response = new SearchResponse();
-            response.setProducts(products);
-            response.setDescription(bedrockService.getDescription(ProductSummaryPromptUtil.getProductSummaryPrompt(searchRequest.getQuery(), products)));
-            return response;
-        } else {
-            NewRelic.addCustomParameter("memberRank", "NormalMember");
-            NewRelic.addCustomParameter("bedrockSearch", false);
-            SearchResponse response = new SearchResponse();
-            response.setProducts(client.search(searchRequest.getQuery(), user));
-            return response;
-        }
+        NewRelic.addCustomParameter("bedrockSearch", true);
+        List<Float> vectors = bedrockService.getEmbedding(searchRequest.getQuery());
+        List<QdrantService.SearchResult> result = qdrantService.searchProducts(vectors, 10, null);
+        List<Product> productList = result.stream().map(QdrantService.SearchResult::getPayload).map(payload -> {
+            try {
+                String id = payload.get("sockId").getStringValue();
+                return client.get(id, user);
+            } catch (CatalogueClient.CatalogueClientException e) {
+                logger.error("Error fetching product with ID: " + payload.get("sockId").getStringValue(), e);
+                return null;
+            }
+        }).filter(Objects::nonNull).toList();
+        Product[] products = productList.subList(0, Math.min(4, productList.size() - 1)).toArray(Product[]::new);
+        SearchResponse response = new SearchResponse();
+        response.setProducts(products);
+        response.setDescription(bedrockService.getDescription(ProductSummaryPromptUtil.getProductSummaryPrompt(searchRequest.getQuery(), products), Objects.equals(user.getRank(), "GoldMember") ? "Premium" : "Normal"));
+        return response;
+
     }
 
 }
