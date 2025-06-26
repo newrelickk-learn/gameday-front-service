@@ -93,7 +93,7 @@ public class BedrockService {
 
     public String getDescription(String prompt, String mode) {
         NewRelic.addCustomParameter("bedrockMode", mode);
-        if (Objects.equals(mode, "Premium")) {
+        if (!Objects.equals(mode, "Premium")) {
             int randomInt = random.nextInt(6);
             return switch (randomInt) {
                 case 0, 1, 2 -> getDescriptionWithClaudeLegacy(prompt);
