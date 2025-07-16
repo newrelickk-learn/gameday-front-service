@@ -146,8 +146,8 @@ jobs:
           sed -i "s/front-service:latest/front-service:${tag}/g" deployment.yaml
           sed -i "s/YOUR_NR_LICENSE_KEY/${{ secrets.NEW_RELIC_LICENSE_KEY }}/g" deployment.yaml
           sed -i "s/YOUR_TRACE_OBSERVER_HOST/${{ secrets.NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_HOST }}/g" deployment.yaml
-          sed -i "s/YOUR_AWS_ACCESS_KEY_ID/${{ secrets.APP_AWS_ACCESS_KEY_ID }}/g" deployment.yaml
-          sed -i "s|YOUR_AWS_SECRET_ACCESS_KEY|${{ secrets.APP_AWS_SECRET_ACCESS_KEY }}|g" deployment.yaml
+          sed -i "s/YOUR_AWS_ACCESS_KEY_ID/${{ secrets.AWS_ACCESS_KEY_ID }}/g" deployment.yaml
+          sed -i "s|YOUR_AWS_SECRET_ACCESS_KEY|${{ secrets.AWS_SECRET_ACCESS_KEY }}|g" deployment.yaml
           kubectl apply -f deployment.yaml
 
       - name: Track deployment in New Relic
