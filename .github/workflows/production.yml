@@ -95,10 +95,11 @@ jobs:
     - name: Extract sourcemaps and publish to New Relic
       if: github.ref_type == 'tag'
       run: |
-        kubectl run sourcemap-extractor --image=${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }} --command -- sleep 300
-        kubectl wait --for=condition=ready pod/sourcemap-extractor --timeout=60s
-        kubectl cp sourcemap-extractor:/app/frontservice.jar ./frontservice.jar
-        kubectl delete pod sourcemap-extractor
+        kubectl delete pod front-sourcemap-extractor --ignore-not-found=true
+        kubectl run front-sourcemap-extractor --image=${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }} --command -- sleep 300
+        kubectl wait --for=condition=ready pod/front-sourcemap-extractor --timeout=60s
+        kubectl cp front-sourcemap-extractor:/app/frontservice.jar ./frontservice.jar
+        kubectl delete pod front-sourcemap-extractor
         unzip frontservice.jar
         cd BOOT-INF/classes/static/js
         ls *.js | xargs -n 1 -I{} publish-sourcemap {}.map https://front.demo.learn.nrkk.technology/static/js/{} \
