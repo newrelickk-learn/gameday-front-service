@@ -29,25 +29,20 @@ public class OrdersService {
     CatalogueService catalogueService;
 
     public Orders getOrCreateOrder(Cart cart) {
-        // まず既存の注文を検索（cart_idでユニーク制約があるため）
-        Optional<Orders> existingOrder = ordersRepository.findByCart(cart);
-        if (existingOrder.isPresent()) {
-            Orders order = existingOrder.get();
-            // 既存の注文がpurchasedでactiveの場合は、新しい注文を作成する必要がある
-            if (order.getPurchased() && order.getActive()) {
-                // 既存の注文を非アクティブにする
-                order.setActive(false);
-                ordersRepository.save(order);
-                // 新しい注文を作成
+        try {
+            Orders order = ordersRepository.findByCartAndPurchasedAndActive(cart, false, true).orElseGet(() -> {
                 Orders newOrder = new Orders(cart);
                 return ordersRepository.save(newOrder);
+            });
+            if (order.getCart() == null) {
+                order.setCart(cart);
             }
             return order;
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // ユニークキー制約違反の場合、既存の注文を取得
+            return ordersRepository.findByCart(cart).orElseThrow(() -> 
+                new RuntimeException("注文の作成に失敗しました"));
         }
-        
-        // 既存の注文がない場合は新規作成
-        Orders newOrder = new Orders(cart);
-        return ordersRepository.save(newOrder);
     }
 
     public Orders setStatusConfirmFromNew(Orders order) {
