@@ -97,11 +97,10 @@ jobs:
       run: |
         kubectl run sourcemap-extractor --image=${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }} --command -- sleep 300
         kubectl wait --for=condition=ready pod/sourcemap-extractor --timeout=60s
-        kubectl exec sourcemap-extractor -- tar -czf /tmp/js.tar.gz -C /app/BOOT-INF/classes/static js
-        kubectl cp sourcemap-extractor:/tmp/js.tar.gz ./js.tar.gz
-        tar -xzf js.tar.gz
+        kubectl cp sourcemap-extractor:/app/frontservice.jar ./frontservice.jar
         kubectl delete pod sourcemap-extractor
-        cd js
+        unzip frontservice.jar
+        cd BOOT-INF/classes/static/js
         ls *.js | xargs -n 1 -I{} publish-sourcemap {}.map https://front.demo.learn.nrkk.technology/static/js/{} \
           --apiKey=${{ secrets.NEW_RELIC_USER_KEY }} \
           --applicationId=1588977533 \
