@@ -106,9 +106,11 @@ public class OrderController {
         try {
             paymentClient.pay(amount, customerId, cardId, "success");
             Orders newOrder = orderService.setStatusPurchaseFromConfirm(order);
-            CartVO newCartVO = cartService.getCartVo(newOrder.getCart());
+            Cart newCart = newOrder.getCart();
+            CartVO newCartVO = cartService.getCartVo(newCart);
             OrderVO orderVO = new OrderVO(newOrder, newCartVO);
             model.addAttribute("order", orderVO);
+            cartService.inactivate(newCart);
             return ResponseEntity.ok(orderVO);
         } catch (PaymentClient.PaymentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);

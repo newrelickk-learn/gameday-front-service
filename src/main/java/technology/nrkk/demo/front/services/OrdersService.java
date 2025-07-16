@@ -40,8 +40,9 @@ public class OrdersService {
             return order;
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
             // ユニークキー制約違反の場合、既存の注文を取得
-            return ordersRepository.findByCart(cart).orElseThrow(() -> 
-                new RuntimeException("注文の作成に失敗しました"));
+            cart.setActive(false);
+            cartRepository.save(cart);
+            throw new RuntimeException("注文の作成に失敗しました");
         }
     }
 

@@ -29,6 +29,7 @@ public class PaymentClient {
 
     public void pay(int amount, int customerId, String cardId, String simulate) throws PaymentException {
         String jsonBody = String.format("{\"amount\": %d, \"customer_id\": %d, \"card_id\": \"%s\", \"simulate\": \"%s\"}", amount, customerId, cardId, simulate);
+        logger.info(jsonBody);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
