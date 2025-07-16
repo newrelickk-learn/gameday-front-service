@@ -5,12 +5,13 @@ services:
     image: mysql:8.0.33
     container_name: mysql-user
     ports:
-      - '3306:3306'
+      - '13306:3306'
     environment:
       MYSQL_DATABASE: db
       MYSQL_USER: user
       MYSQL_PASSWORD: password
       MYSQL_ROOT_PASSWORD: root
     volumes:
-      - ./database/initialize:/docker-entrypoint-initdb.d
-      - ./database/config/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ../gameday-front-service-db/ddl.sql:/docker-entrypoint-initdb.d/1init.sql
+      - ../gameday-front-service-db/data.sql:/docker-entrypoint-initdb.d/2data.sql
+      - ../gameday-front-service-db/my.cnf:/etc/mysql/conf.d/my.cnf

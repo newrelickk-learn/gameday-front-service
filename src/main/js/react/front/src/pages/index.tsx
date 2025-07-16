@@ -31,7 +31,7 @@ export const Index = () => {
 
     const handleUpdateCart = useCallback((cart: Cart) => {
         setCart(cart)
-    }, [setCart])
+    }, [])
 
     const handleClickTag = useCallback((tag: string) => {
         const newSelectedTags = JSON.parse(JSON.stringify(selectedTags))
@@ -49,8 +49,8 @@ export const Index = () => {
     }, [setSearchQuery]), 500)
 
     return (
-        <CartContext.Provider value={cart}>
-            <GlobalHeader onLoadCart={handleUpdateCart}/>
+        <CartContext.Provider value={{cart, updateCart: handleUpdateCart}}>
+            <GlobalHeader/>
             <CardMedia
                 component="img"
                 sx={{ width: '100%' }}

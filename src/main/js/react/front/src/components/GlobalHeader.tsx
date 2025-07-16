@@ -15,13 +15,10 @@ import {OrderStage} from "../types/order";
 import {OrderForm} from "./OrderForm";
 import NrAgent from "../o11y/newrelic";
 
-interface GlobalHeaderProps {
-    onLoadCart: (cart: any)=>void,
-}
-export const GlobalHeader: FC<GlobalHeaderProps> = ({ onLoadCart }) => {
+export const GlobalHeader: FC = () => {
     const [openCart, setOpenCart] = React.useState(false);
     const [stage, setStage] = React.useState<string>("");
-    const cart = useContext<Cart>(CartContext)
+    const { cart, updateCart } = useContext(CartContext)
     const [errorMessage, setErrorMessage] = useState("")
     const handleCloseAlert = useCallback(async () => {
         setErrorMessage("")
@@ -53,12 +50,12 @@ export const GlobalHeader: FC<GlobalHeaderProps> = ({ onLoadCart }) => {
 
     const handleClickOpenCart = useCallback(() => {
         API.get(`/cart`).then((data) => {
-            onLoadCart(data);
+            updateCart(data);
             setOpenCart(true);
         }, (error) => {
             setErrorMessage("エラーが発生しました。しばらくお待ちください。ERR-CART002")
         })
-    }, [setOpenCart, setErrorMessage]);
+    }, [updateCart, setErrorMessage]);
 
     const handleCloseCart = useCallback(() => {
         setOpenCart(false);

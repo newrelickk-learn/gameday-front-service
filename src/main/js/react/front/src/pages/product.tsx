@@ -31,11 +31,11 @@ export const ProductPage = () => {
 
     const handleUpdateCart = useCallback((cart: Cart) => {
         setCart(cart)
-    }, [setCart])
+    }, [])
 
     return (
-        <CartContext.Provider value={cart}>
-            <GlobalHeader onLoadCart={handleUpdateCart}/>
+        <CartContext.Provider value={{cart, updateCart: handleUpdateCart}}>
+            <GlobalHeader/>
             <div className="main">
                 {item !== undefined && <Item item={item} onAddItem={handleUpdateCart}/>}
             </div>

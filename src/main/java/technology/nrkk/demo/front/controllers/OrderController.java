@@ -11,6 +11,8 @@ import technology.nrkk.demo.front.models.OrderVO;
 import technology.nrkk.demo.front.services.CartService;
 import technology.nrkk.demo.front.services.OrdersService;
 import technology.nrkk.demo.front.services.UserService;
+import org.springframework.http.*;
+import technology.nrkk.demo.front.webclient.PaymentClient;
 
 import java.security.Principal;
 import java.util.List;
@@ -24,87 +26,126 @@ public class OrderController {
     CartService cartService;
     @Autowired
     OrdersService orderService;
+    @Autowired
+    private PaymentClient paymentClient;
 
     @PostMapping(value = "/order")
-    public OrderVO get(Principal principal, final Model model) {
-        User user = userService.getUserByPrincipal(principal);
-        Cart cart = cartService.getOrCreateCart(user);
-        Orders order = orderService.getOrCreateOrder(cart);
-        CartVO cartVO = cartService.getCartVo(order.getCart());
-        OrderVO orderVO = new OrderVO(order, cartVO);
-        model.addAttribute("order", orderVO);
-        return orderVO;
+    public ResponseEntity<OrderVO> get(Principal principal, final Model model) {
+        try {
+            User user = userService.getUserByPrincipal(principal);
+            Cart cart = cartService.getOrCreateCart(user);
+            Orders order = orderService.getOrCreateOrder(cart);
+            CartVO cartVO = cartService.getCartVo(order.getCart());
+            OrderVO orderVO = new OrderVO(order, cartVO);
+            model.addAttribute("order", orderVO);
+            return ResponseEntity.ok(orderVO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
     @GetMapping(value = "/order")
-    public OrderVO startOrder(Principal principal, final Model model) {
-        User user = userService.getUserByPrincipal(principal);
-        Cart cart = cartService.getOrCreateCart(user);
-        Orders order = orderService.getOrCreateOrder(cart);
-        CartVO cartVO = cartService.getCartVo(order.getCart());
-        OrderVO orderVO = new OrderVO(order, cartVO);
-        model.addAttribute("order", orderVO);
-        return orderVO;
+    public ResponseEntity<OrderVO> startOrder(Principal principal, final Model model) {
+        try {
+            User user = userService.getUserByPrincipal(principal);
+            Cart cart = cartService.getOrCreateCart(user);
+            Orders order = orderService.getOrCreateOrder(cart);
+            CartVO cartVO = cartService.getCartVo(order.getCart());
+            OrderVO orderVO = new OrderVO(order, cartVO);
+            model.addAttribute("order", orderVO);
+            return ResponseEntity.ok(orderVO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
     @PostMapping(value = "/order/confirm", produces = "application/json")
-    public OrderVO setConfirmFromNew(Principal principal, @RequestBody Orders reqOrder, final Model model) {
-        User user = userService.getUserByPrincipal(principal);
-        Cart cart = cartService.getCart(user);
-        Orders order = orderService.getOrder(cart, Orders.OrderStage.NEW);
-        order.setCouponCode(reqOrder.getCouponCode());
-        order.setPaymentType(reqOrder.getPaymentType());
-        Orders newOrder = orderService.setStatusConfirmFromNew(order);
-        CartVO cartVO = cartService.getCartVo(newOrder.getCart());
-        OrderVO orderVO = new OrderVO(order, cartVO);
-        model.addAttribute("order", orderVO);
-        return orderVO;
+    public ResponseEntity<OrderVO> setConfirmFromNew(Principal principal, @RequestBody Orders reqOrder, final Model model) {
+        try {
+            User user = userService.getUserByPrincipal(principal);
+            Cart cart = cartService.getCart(user);
+            Orders order = orderService.getOrder(cart, Orders.OrderStage.NEW);
+            order.setCouponCode(reqOrder.getCouponCode());
+            order.setPaymentType(reqOrder.getPaymentType());
+            Orders newOrder = orderService.setStatusConfirmFromNew(order);
+            CartVO cartVO = cartService.getCartVo(newOrder.getCart());
+            OrderVO orderVO = new OrderVO(order, cartVO);
+            model.addAttribute("order", orderVO);
+            return ResponseEntity.ok(orderVO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
     @GetMapping(value = "/order/confirm", produces = "application/json")
-    public OrderVO getConfirm(Principal principal, final Model model) {
-        User user = userService.getUserByPrincipal(principal);
-        Cart cart = cartService.getCart(user);
-        Orders order = orderService.getOrder(cart, Orders.OrderStage.CONFIRM);
-        CartVO cartVO = cartService.getCartVo(order.getCart());
-        OrderVO orderVO = new OrderVO(order, cartVO);
-        model.addAttribute("order", orderVO);
-        return orderVO;
+    public ResponseEntity<OrderVO> getConfirm(Principal principal, final Model model) {
+        try {
+            User user = userService.getUserByPrincipal(principal);
+            Cart cart = cartService.getCart(user);
+            Orders order = orderService.getOrder(cart, Orders.OrderStage.CONFIRM);
+            CartVO cartVO = cartService.getCartVo(order.getCart());
+            OrderVO orderVO = new OrderVO(order, cartVO);
+            model.addAttribute("order", orderVO);
+            return ResponseEntity.ok(orderVO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
     @PostMapping(value = "/order/purchase", produces = "application/json")
-    public OrderVO setPurchaseFromConfirm(Principal principal, final Model model) {
+    public ResponseEntity<OrderVO> setPurchaseFromConfirm(Principal principal, final Model model) {
         User user = userService.getUserByPrincipal(principal);
         Cart cart = cartService.getCart(user);
         Orders order = orderService.getOrder(cart, Orders.OrderStage.CONFIRM);
-        Orders newOrder = orderService.setStatusPurchaseFromConfirm(order);
-        CartVO cartVO = cartService.getCartVo(newOrder.getCart());
-        OrderVO orderVO = new OrderVO(newOrder, cartVO);
-        model.addAttribute("order", orderVO);
-        return orderVO;
+        CartVO cartVO = cartService.getCartVo(cart);
+
+        Integer amount = cartVO.getTotalPrice().intValue();
+        Integer customerId = user.getId();
+        String cardId = order.getPaymentType();
+
+        try {
+            paymentClient.pay(amount, customerId, cardId, "success");
+            Orders newOrder = orderService.setStatusPurchaseFromConfirm(order);
+            CartVO newCartVO = cartService.getCartVo(newOrder.getCart());
+            OrderVO orderVO = new OrderVO(newOrder, newCartVO);
+            model.addAttribute("order", orderVO);
+            return ResponseEntity.ok(orderVO);
+        } catch (PaymentClient.PaymentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
     @PostMapping(value = "/order/{id}/ship", produces = "application/json")
-    public OrderVO setShippedFromPurchased(Principal principal, @PathVariable("id") Integer id) {
-        User user = userService.getUserByPrincipal(principal);
-        Orders order = orderService.assertStock(orderService.getOrderById(id));
-        if (order.getUser().getId().equals(user.getId())) {
-            Orders newOrder = orderService.setStatusShippedFromPurchased(order);
-            CartVO cartVO = cartService.getCartVo(newOrder.getCart());
-            return new OrderVO(newOrder, cartVO);
+    public ResponseEntity<OrderVO> setShippedFromPurchased(Principal principal, @PathVariable("id") Integer id) {
+        try {
+            User user = userService.getUserByPrincipal(principal);
+            Orders order = orderService.assertStock(orderService.getOrderById(id));
+            if (order.getUser().getId().equals(user.getId())) {
+                Orders newOrder = orderService.setStatusShippedFromPurchased(order);
+                CartVO cartVO = cartService.getCartVo(newOrder.getCart());
+                return ResponseEntity.ok(new OrderVO(newOrder, cartVO));
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
-        return null;
     }
 
     @GetMapping(value = "/order/purchase", produces = "application/json")
-    public OrderVO getPurchase(Principal principal, final Model model) {
-        User user = userService.getUserByPrincipal(principal);
-        Cart cart = cartService.getCart(user);
-        Orders order = orderService.getOrder(cart, Orders.OrderStage.PURCHASED);
-        CartVO cartVO = cartService.getCartVo(order.getCart());
-        OrderVO orderVO = new OrderVO(order, cartVO);
-        model.addAttribute("order", orderVO);
-        return orderVO;
+    public ResponseEntity<OrderVO> getPurchase(Principal principal, final Model model) {
+        try {
+            User user = userService.getUserByPrincipal(principal);
+            Cart cart = cartService.getCart(user);
+            Orders order = orderService.getOrder(cart, Orders.OrderStage.PURCHASED);
+            CartVO cartVO = cartService.getCartVo(order.getCart());
+            OrderVO orderVO = new OrderVO(order, cartVO);
+            model.addAttribute("order", orderVO);
+            return ResponseEntity.ok(orderVO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
     @GetMapping(value = "/admin/order/list", produces = "application/json")
