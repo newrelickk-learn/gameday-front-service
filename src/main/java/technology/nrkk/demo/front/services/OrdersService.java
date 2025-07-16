@@ -29,14 +29,25 @@ public class OrdersService {
     CatalogueService catalogueService;
 
     public Orders getOrCreateOrder(Cart cart) {
-        Orders order = ordersRepository.findByCartAndPurchasedAndActive(cart, false,true).orElseGet(()-> {
-            Orders newOrder = new Orders(cart);
-            return ordersRepository.save(newOrder);
-        });
-        if (order.getCart() == null) {
-            order.setCart(cart);
+        // まず既存の注文を検索（cart_idでユニーク制約があるため）
+        Optional<Orders> existingOrder = ordersRepository.findByCart(cart);
+        if (existingOrder.isPresent()) {
+            Orders order = existingOrder.get();
+            // 既存の注文がpurchasedでactiveの場合は、新しい注文を作成する必要がある
+            if (order.getPurchased() && order.getActive()) {
+                // 既存の注文を非アクティブにする
+                order.setActive(false);
+                ordersRepository.save(order);
+                // 新しい注文を作成
+                Orders newOrder = new Orders(cart);
+                return ordersRepository.save(newOrder);
+            }
+            return order;
         }
-        return order;
+        
+        // 既存の注文がない場合は新規作成
+        Orders newOrder = new Orders(cart);
+        return ordersRepository.save(newOrder);
     }
 
     public Orders setStatusConfirmFromNew(Orders order) {

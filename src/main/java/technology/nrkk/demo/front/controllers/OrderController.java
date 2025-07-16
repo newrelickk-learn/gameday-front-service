@@ -39,6 +39,19 @@ public class OrderController {
             OrderVO orderVO = new OrderVO(order, cartVO);
             model.addAttribute("order", orderVO);
             return ResponseEntity.ok(orderVO);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // ユニークキー制約違反の場合は再試行
+            try {
+                User user = userService.getUserByPrincipal(principal);
+                Cart cart = cartService.getOrCreateCart(user);
+                Orders order = orderService.getOrCreateOrder(cart);
+                CartVO cartVO = cartService.getCartVo(order.getCart());
+                OrderVO orderVO = new OrderVO(order, cartVO);
+                model.addAttribute("order", orderVO);
+                return ResponseEntity.ok(orderVO);
+            } catch (Exception retryException) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -54,6 +67,19 @@ public class OrderController {
             OrderVO orderVO = new OrderVO(order, cartVO);
             model.addAttribute("order", orderVO);
             return ResponseEntity.ok(orderVO);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // ユニークキー制約違反の場合は再試行
+            try {
+                User user = userService.getUserByPrincipal(principal);
+                Cart cart = cartService.getOrCreateCart(user);
+                Orders order = orderService.getOrCreateOrder(cart);
+                CartVO cartVO = cartService.getCartVo(order.getCart());
+                OrderVO orderVO = new OrderVO(order, cartVO);
+                model.addAttribute("order", orderVO);
+                return ResponseEntity.ok(orderVO);
+            } catch (Exception retryException) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
