@@ -42,6 +42,7 @@ type: Opaque
 stringData:
   AWS_ACCESS_KEY_ID: "YOUR_AWS_ACCESS_KEY_ID"
   AWS_SECRET_ACCESS_KEY: "YOUR_AWS_SECRET_ACCESS_KEY"
+  NEW_RELIC_LICENSE_KEY: "YOUR_NR_LICENSE_KEY"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -72,7 +73,10 @@ spec:
         - name: NEW_RELIC_APP_NAME
           value: front-service
         - name: NEW_RELIC_LICENSE_KEY
-          value: YOUR_NR_LICENSE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: NEW_RELIC_LICENSE_KEY
+              name: front-service-secrets
         - name: NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
           value: "true"
         - name: NEW_RELIC_INFINITE_TRACING_TRACE_OBSERVER_HOST
@@ -90,7 +94,7 @@ spec:
         - name: QDRANT_HOST
           value: qdrant.qdrant
         - name: JVM_OPTS
-          value: "-Dcatalogue.url=http://catalogue-web-svc -Dspring.datasource.url=jdbc:mysql://front-db:3306/db -Dspring.datasource.username=frontservice -Dspring.datasource.password=frontservice_password -Dnewrelic.config.ai_monitoring.enabled=true -Dnewrelic.config.custom_insights_events.max_samples_stored=100000 -Dnewrelic.config.span_events.max_samples_stored=10000"
+          value: "-Dcatalogue.url=http://catalogue-web-svc -Dpayment.url=http://payment -Dspring.datasource.url=jdbc:mysql://front-db:3306/db -Dspring.datasource.username=frontservice -Dspring.datasource.password=frontservice_password -Dnewrelic.config.ai_monitoring.enabled=true -Dnewrelic.config.custom_insights_events.max_samples_stored=100000 -Dnewrelic.config.span_events.max_samples_stored=10000"
         - name: RAILS_LOG_TO_STDOUT
           value: "true"
         - name: RAILS_MAX_THREADS
