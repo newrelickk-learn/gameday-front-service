@@ -26,9 +26,27 @@ public class PaymentClient {
                 })
                 .build();
     }
-
     public void pay(int amount, int customerId, String cardId, String simulate) throws PaymentException {
-        String jsonBody = String.format("{\"amount\": %d, \"customer_id\": %d, \"card_id\": \"%s\", \"simulate\": \"%s\"}", amount, customerId, cardId, simulate);
+        try {
+            this.tryPay(amount, customerId, cardId, simulate, null);
+        } catch (Exception e) {
+            if (customerId >= 30) {
+                this.tryPay(amount, customerId, cardId, simulate, "legacy");
+            }
+        }
+    }
+    private void tryPay(int amount, int customerId, String cardId, String simulate, String provider) throws PaymentException {
+        String paymentProvider = "quickpay";
+        if (provider != null) {
+            paymentProvider = provider;
+        } else {
+            if (customerId < 10) {
+                paymentProvider = "fastpay";
+            } else if (customerId < 30) {
+                paymentProvider = "stablepay";
+            }
+        }
+        String jsonBody = String.format("{\"amount\": %d, \"customer_id\": %d, \"card_id\": \"%s\", \"simulate\": \"%s\", \"provider\": \"%s\"}", amount, customerId, cardId, simulate, paymentProvider);
         logger.info(jsonBody);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

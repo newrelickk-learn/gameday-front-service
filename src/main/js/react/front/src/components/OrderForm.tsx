@@ -5,6 +5,7 @@ import {DialogActions, DialogContent, DialogTitle, MenuItem, TextField} from "@m
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import {Order, OrderStage} from "../types/order";
+import NrAgent from "../o11y/newrelic";
 
 interface OrderFormProps {
     cart: Cart,
@@ -14,10 +15,16 @@ interface OrderFormProps {
 export const OrderForm: FC<OrderFormProps> = ({ cart, onCloseCart, onNext }) => {
 
     const [order, setOrder] = useState<Order>();
+    const [userId, setUserId] = useState<string>();
 
     useEffect(() => {
         API.get(`/order`).then((data) => {
             setOrder(data);
+        })
+        API.post(`/api/user`).then((data) => {
+            if (data?.id) {
+                setUserId(`uid_${data.id}`);
+            }
         })
     }, [setOrder])
 
@@ -34,6 +41,7 @@ export const OrderForm: FC<OrderFormProps> = ({ cart, onCloseCart, onNext }) => 
     }, [order, setOrder]);
 
     const handleNext = useCallback(() => {
+        NrAgent.addPageAction('order_next_clicked', { orderStage: order?.orderStage, userId });
         const newOrder = JSON.parse(JSON.stringify(order)) as Order
         if (order?.orderStage === OrderStage.NEW) {
             if (!order.paymentType) {
@@ -49,7 +57,7 @@ export const OrderForm: FC<OrderFormProps> = ({ cart, onCloseCart, onNext }) => 
         } else if (order?.orderStage === OrderStage.PURCHASED) {
             onNext()
         }
-    }, [order, setOrder, onNext]);
+    }, [order, setOrder, onNext, userId]);
     return (
         <Fragment>
             <DialogTitle id="alert-dialog-title">
@@ -84,7 +92,7 @@ export const OrderForm: FC<OrderFormProps> = ({ cart, onCloseCart, onNext }) => 
             </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCloseCart}>閉じる</Button>
+                <Button id={"close"} onClick={() => { NrAgent.addPageAction('order_close_clicked', { userId }); onCloseCart(); }}>閉じる</Button>
                 {order?.orderStage !== OrderStage.PURCHASED && (
                 <Button id={"next"} onClick={handleNext} autoFocus>
                     {order?.orderStage === OrderStage.NEW && "確認"}
