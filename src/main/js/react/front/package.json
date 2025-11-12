@@ -7,7 +7,7 @@
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^7.1.2",
     "@mui/material": "^7.1.2",
-    "@newrelic/browser-agent": "^1.292.0",
+    "@newrelic/browser-agent": "^1.302.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
