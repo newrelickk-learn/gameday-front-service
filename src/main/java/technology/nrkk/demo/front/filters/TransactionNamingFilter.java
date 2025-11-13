@@ -25,7 +25,8 @@ public class TransactionNamingFilter implements HandlerInterceptor {
         String path = request.getRequestURI();
         String method = request.getMethod();
 
-        if (path != null && method != null){
+        if (path != null && method != null && !"/error".equals(path) && !path.startsWith("/40") && !path.startsWith("/50")){
+            NewRelic.getAgent().getTransaction().isTransactionNameSet();
             boolean ignoreTx = path
                     .matches(ACTUATOR_ENDPOINT_PATTERN);
             if (ignoreTx) {
