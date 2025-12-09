@@ -13,7 +13,6 @@ import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import technology.nrkk.demo.front.delegator.NewRelicDelegator;
-import technology.nrkk.demo.front.filters.TransactionNamingFilter;
 
 @Configuration
 @EnableWebMvc
@@ -50,15 +49,7 @@ class WebConfig implements ApplicationContextAware, WebMvcConfigurer {
                 .addResourceLocations("classpath:/static/");
     }
 
-    @Bean
-    public TransactionNamingFilter transactionNamingReactiveFilter() {
-        return new TransactionNamingFilter();
-    }
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(transactionNamingReactiveFilter());
-    }
 
     @Bean("newrelic")
     public NewRelicDelegator newrelic() {
