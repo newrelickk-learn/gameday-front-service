@@ -19,6 +19,7 @@ repositories {
 def grpcVersion = '1.65.1'
 def awsSdkVersion = '2.31.66'
 def newrelicVersion = '8.24.0'
+def tomcatVersion = '10.1.47'
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -39,6 +40,7 @@ dependencies {
     implementation 'com.google.guava:guava:33.2.1-jre'
     implementation 'io.qdrant:client:1.14.0'
     implementation "com.newrelic.agent.java:newrelic-api:${newrelicVersion}"
+    implementation "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}"
     annotationProcessor 'org.projectlombok:lombok:1.18.28'
     runtimeOnly 'com.mysql:mysql-connector-j'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
