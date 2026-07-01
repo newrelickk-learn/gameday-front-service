@@ -20,7 +20,7 @@ metadata:
   name: front-ingress-nginx
   namespace: catalogue
 spec:
-  ingressClassName: nginx
+  ingressClassName: nginx-internal
   rules:
     - host: front.demo.learn.nrkk.technology
       http:
