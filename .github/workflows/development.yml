@@ -2,7 +2,7 @@ name: Development Build
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 env:
   AWS_REGION: us-east-1
@@ -30,8 +30,6 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Login to Amazon ECR Public
@@ -56,4 +54,5 @@ jobs:
         tags: ${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }}
         build-args: |
           COMMIT_SHA=${{ github.sha }}
+          RELEASE_TAG=pr-${{ github.event.pull_request.number }}
         network: host
