@@ -8,8 +8,6 @@ import com.newrelic.api.agent.NewRelic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.regions.Region;
@@ -39,14 +37,9 @@ public class BedrockService {
 
     private final static Logger logger = LoggerFactory.getLogger(BedrockService.class);
     public BedrockService(
-            @org.springframework.beans.factory.annotation.Value("${aws.region}") String region,
-            @org.springframework.beans.factory.annotation.Value("${aws.credentials.access-key-id}") String awsAccessKeyId,
-            @org.springframework.beans.factory.annotation.Value("${aws.credentials.secret-access-key}") String awsSecretAccessKey) {
-        AwsBasicCredentials credentials = AwsBasicCredentials.create(awsAccessKeyId, awsSecretAccessKey);
-
+            @org.springframework.beans.factory.annotation.Value("${aws.region}") String region) {
         this.bedrockClient = BedrockRuntimeAsyncClient.builder()
                 .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .build();
         this.objectMapper = new ObjectMapper();
         //NewRelic.getAgent().getAiMonitoring().setLlmTokenCountCallback(new SampleLlmTokenCountCallback());
