@@ -95,7 +95,7 @@ public class BedrockService {
         } else {
             int randomInt = random.nextInt(5);
             return switch (randomInt) {
-                case 0, 1, 2 -> getDescriptionWithTitan(prompt);
+                case 0, 1, 2 -> getDescriptionWithNova(prompt);
                 default -> throw new RuntimeException("We cannot call the Bedrock");
             };
         }
