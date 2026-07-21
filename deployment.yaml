@@ -40,9 +40,13 @@ metadata:
   namespace: catalogue
 type: Opaque
 stringData:
-  AWS_ACCESS_KEY_ID: "YOUR_AWS_ACCESS_KEY_ID"
-  AWS_SECRET_ACCESS_KEY: "YOUR_AWS_SECRET_ACCESS_KEY"
   NEW_RELIC_LICENSE_KEY: "YOUR_NR_LICENSE_KEY"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: front-service
+  namespace: catalogue
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -68,6 +72,7 @@ spec:
       labels:
         name: front-service
     spec:
+      serviceAccountName: front-service
       containers:
       - env:
         - name: NEW_RELIC_APP_NAME
@@ -99,16 +104,6 @@ spec:
           value: "true"
         - name: RAILS_MAX_THREADS
           value: "2"
-        - name: AWS_CREDENTIALS_ACCESS-KEY-ID
-          valueFrom:
-            secretKeyRef:
-              key: AWS_ACCESS_KEY_ID
-              name: front-service-secrets
-        - name: AWS_CREDENTIALS_SECRET-ACCESS-KEY
-          valueFrom:
-            secretKeyRef:
-              key: AWS_SECRET_ACCESS_KEY
-              name: front-service-secrets
         image: public.ecr.aws/g7c8o4c7/front-service:latest
         imagePullPolicy: Always
         livenessProbe:
