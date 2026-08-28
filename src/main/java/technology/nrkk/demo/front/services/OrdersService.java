@@ -9,6 +9,7 @@ import technology.nrkk.demo.front.models.Product;
 import technology.nrkk.demo.front.repositories.CartRepository;
 import technology.nrkk.demo.front.repositories.OrdersRepository;
 import technology.nrkk.demo.front.webclient.CatalogueClient;
+import technology.nrkk.demo.front.webclient.CatalogueClientException;
 
 import java.util.List;
 import java.util.Optional;
@@ -64,7 +65,7 @@ public class OrdersService {
                     try {
                         Product product = catalogueService.get(item.getProductId(), order.getUser());
                         return product.getCount() > item.getAmount();
-                    } catch (CatalogueClient.CatalogueClientException e) {
+                    } catch (CatalogueClientException e) {
                         throw new RuntimeException(e);
                     }
                 }).reduce(true, (result, val) -> result && val);

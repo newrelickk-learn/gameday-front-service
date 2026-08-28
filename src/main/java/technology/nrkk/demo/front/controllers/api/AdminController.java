@@ -12,6 +12,7 @@ import technology.nrkk.demo.front.models.Product;
 import technology.nrkk.demo.front.services.BedrockService;
 import technology.nrkk.demo.front.services.QdrantService;
 import technology.nrkk.demo.front.webclient.CatalogueClient;
+import technology.nrkk.demo.front.webclient.CatalogueClientException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +34,7 @@ public class AdminController {
 
     @Trace(dispatcher = true)
     //@RequestMapping(value ="/admin/initiate")
-    public ResponseEntity<Void> get() throws CatalogueClient.CatalogueClientException {
+    public ResponseEntity<Void> get() throws CatalogueClientException {
         qdrantService.createCollectionIfNotExists();
         Product[] products = client.search("", null, 1000);
         Map<String, List<Float>> vectorMap = new HashMap<>();
@@ -56,7 +57,7 @@ public class AdminController {
 
     @Trace(dispatcher = true)
     //@RequestMapping(value ="/admin/test")
-    public ResponseEntity<Void> test() throws CatalogueClient.CatalogueClientException {
+    public ResponseEntity<Void> test() throws CatalogueClientException {
         List<Float> vectors = bedrockService.getEmbedding("薄い男性用のしっかりした靴下が欲しい");
         List<QdrantService.SearchResult> result = qdrantService.searchProducts(vectors, 10, null);
         logger.info(result.get(0).getId());
@@ -65,14 +66,14 @@ public class AdminController {
 
     @Trace(dispatcher = true)
     //@RequestMapping(value ="/admin/test/nova")
-    public ResponseEntity<Void> nova() throws CatalogueClient.CatalogueClientException {
+    public ResponseEntity<Void> nova() throws CatalogueClientException {
         String description = bedrockService.getDescription("薄い男性用のしっかりした靴下が欲しい", "Premium");
         logger.info(description);
         return ResponseEntity.ok().build();
     }
     @Trace(dispatcher = true)
     //@RequestMapping(value ="/admin/test/titan")
-    public ResponseEntity<Void> titan() throws CatalogueClient.CatalogueClientException {
+    public ResponseEntity<Void> titan() throws CatalogueClientException {
         String description = bedrockService.getDescriptionWithTitan("薄い男性用のしっかりした靴下が欲しい");
         logger.info(description);
         return ResponseEntity.ok().build();
@@ -86,7 +87,7 @@ public class AdminController {
     }
     @Trace(dispatcher = true)
     //@RequestMapping(value ="/admin/test/legacy")
-    public ResponseEntity<Void> legacy() throws CatalogueClient.CatalogueClientException {
+    public ResponseEntity<Void> legacy() throws CatalogueClientException {
         String description = bedrockService.getDescriptionWithClaudeLegacy("薄い男性用のしっかりした靴下が欲しい");
         logger.info(description);
         return ResponseEntity.ok().build();

@@ -11,6 +11,7 @@ import technology.nrkk.demo.front.models.CartVO;
 import technology.nrkk.demo.front.models.Product;
 import technology.nrkk.demo.front.repositories.CartRepository;
 import technology.nrkk.demo.front.webclient.CatalogueClient;
+import technology.nrkk.demo.front.webclient.CatalogueClientException;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -59,7 +60,7 @@ public class CartService {
             try {
                 Product product = client.get(productId, cart.getUser());
                 return new CartItemVO(item, product);
-            } catch (CatalogueClient.CatalogueClientException e) {
+            } catch (CatalogueClientException e) {
                 throw new RuntimeException(e);
             }
         }).toList();

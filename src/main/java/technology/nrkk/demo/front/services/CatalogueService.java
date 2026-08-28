@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import technology.nrkk.demo.front.entities.User;
 import technology.nrkk.demo.front.models.Product;
 import technology.nrkk.demo.front.webclient.CatalogueClient;
+import technology.nrkk.demo.front.webclient.CatalogueClientException;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class CatalogueService {
     @Autowired
     CatalogueClient client;
 
-    public Product get(String id, User user) throws CatalogueClient.CatalogueClientException {
+    public Product get(String id, User user) throws CatalogueClientException {
         return client.get(id, user);
     }
 
@@ -22,7 +23,7 @@ public class CatalogueService {
         return ids.stream().map(id -> {
             try {
                 return this.get(id, user);
-            } catch (CatalogueClient.CatalogueClientException e) {
+            } catch (CatalogueClientException e) {
                 throw new RuntimeException(e);
             }
         }).toList();

@@ -113,28 +113,4 @@ public class CatalogueClient {
     private static String maskUserId(String url) {
         return url.replaceAll("user=uid_[^&]*", "user=?");
     }
-
-    public static class CatalogueClientException extends Exception {
-        public CatalogueClientException(String message, Exception e) {
-            super(message, e);
-        }
-    }
-
-    public static class CatalogueServerErrorException extends CatalogueClientException {
-        public CatalogueServerErrorException(String message, Exception e) {
-            super(message, e);
-        }
-    }
-
-    public static class CatalogueConnectionException extends CatalogueClientException {
-        public CatalogueConnectionException(String message, Exception e) {
-            super(message, e);
-        }
-    }
-
-    public static class CatalogueResponseParseException extends CatalogueClientException {
-        public CatalogueResponseParseException(String message, Exception e) {
-            super(message, e);
-        }
-    }
 }
