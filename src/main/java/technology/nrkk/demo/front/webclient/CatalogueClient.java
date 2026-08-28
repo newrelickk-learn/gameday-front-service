@@ -93,21 +93,25 @@ public class CatalogueClient {
     }
 
     private CatalogueServerErrorException handleServerError(String url, HttpStatusCodeException e) {
-        String message = "Catalogue returned %s for '%s': %s".formatted(e.getStatusCode(), url, e.getResponseBodyAsString());
+        String message = "Catalogue returned %s for '%s': %s".formatted(e.getStatusCode(), maskUserId(url), e.getResponseBodyAsString());
         logger.error(message, e);
         return new CatalogueServerErrorException(message, e);
     }
 
     private CatalogueConnectionException handleConnectionError(String url, ResourceAccessException e) {
-        String message = "Could not connect to catalogue at '%s'".formatted(url);
+        String message = "Could not connect to catalogue at '%s'".formatted(maskUserId(url));
         logger.error(message, e);
         return new CatalogueConnectionException(message, e);
     }
 
     private CatalogueResponseParseException handleParseError(String url, RestClientException e) {
-        String message = "Failed to parse catalogue response from '%s'".formatted(url);
+        String message = "Failed to parse catalogue response from '%s'".formatted(maskUserId(url));
         logger.error(message, e);
         return new CatalogueResponseParseException(message, e);
+    }
+
+    private static String maskUserId(String url) {
+        return url.replaceAll("user=uid_[^&]*", "user=?");
     }
 
     public static class CatalogueClientException extends Exception {
