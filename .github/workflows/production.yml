@@ -90,7 +90,7 @@ jobs:
       if: github.ref_type == 'tag'
       run: aws eks update-kubeconfig --name Socks --region ap-northeast-1
 
-    - name: Extract sourcemaps and publish to New Relic
+    - name: Extract sourcemaps
       if: github.ref_type == 'tag'
       run: |
         kubectl run front-sourcemap-extractor --image=${{ env.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }} --command -- sleep 300
@@ -98,10 +98,26 @@ jobs:
         kubectl cp front-sourcemap-extractor:/app/frontservice.jar ./frontservice.jar
         kubectl delete pod front-sourcemap-extractor
         unzip frontservice.jar
+
+    - name: Publish sourcemaps to New Relic (US)
+      if: github.ref_type == 'tag'
+      run: |
         cd BOOT-INF/classes/static/js
         ls *.js | xargs -n 1 -I{} publish-sourcemap {}.map https://front.demo.learn.nrkk.technology/static/js/{} \
           --apiKey=${{ secrets.NEW_RELIC_USER_KEY }} \
           --applicationId=1588977533 \
+          --repoUrl=${{ github.server_url }}/${{ github.repository }} \
+          --buildCommit=${{ github.sha }}
+
+    - name: Publish sourcemaps to New Relic (JP)
+      if: github.ref_type == 'tag'
+      env:
+        SOURCEMAP_UPLOAD_HOST: https://sourcemaps.service.jp.newrelic.com
+      run: |
+        cd BOOT-INF/classes/static/js
+        ls *.js | xargs -n 1 -I{} publish-sourcemap {}.map https://front.demo.learn.nrkk.technology/static/js/{} \
+          --apiKey=${{ secrets.NEW_RELIC_JP_USER_KEY }} \
+          --applicationId=43818 \
           --repoUrl=${{ github.server_url }}/${{ github.repository }} \
           --buildCommit=${{ github.sha }}
 
