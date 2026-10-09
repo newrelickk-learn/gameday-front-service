@@ -57,7 +57,7 @@ function resolveNrTarget(): NrTarget {
         return fromCookie
     }
 
-    return 'us'
+    return 'jp'
 }
 
 const prodOptionsByTarget: Record<NrTarget, typeof prodOptionsUS> = {
